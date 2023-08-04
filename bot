@@ -1,1 +1,1958 @@
-{"note":"14 AGUSTUS 2023","list-aktivasi":["1"]}
+import argparse
+import os,sys
+import json
+import random
+import time
+import re
+import colorama
+import socket
+import traceback
+from random import choice
+from config import *
+from colorama import *
+from time import sleep
+from datetime import datetime
+from requests.models import HTTPError, ReadTimeoutError
+from anticaptchaofficial.hcaptchaproxyless import *
+from anticaptchaofficial.hcaptchaproxyon import *
+from hashlib import md5
+from getpass import getuser
+from pathlib import Path
+sys.dont_write_bytecode = True
+colorama.init()
+try:
+    import requests
+    from colorama import *
+    #import ujson
+    #import ext_httpx as httpx
+    #import Taraje as httpx
+    init(autoreset=True)
+    kuning = "\033[93m"
+    ab = "\033[90m"
+    rd = "\033[91m"
+    ij = "\033[92m"
+    kn = "\033[93m"
+    rs = "\033[0;0m"
+    sp = f"{ab}|{rs}"
+    # CONFIG WARNA
+    res = Style.RESET_ALL
+    putih = Style.NORMAL + Fore.WHITE
+    putih2 = Style.BRIGHT + Fore.WHITE
+    hitam = Style.BRIGHT + Fore.BLACK
+    hitam2 = Style.BRIGHT + Fore.BLACK
+    ungu = Style.NORMAL + Fore.MAGENTA
+    hijau = Style.NORMAL + Fore.GREEN
+    hijau2 = Style.BRIGHT + Fore.GREEN
+    merah = Style.NORMAL + Fore.RED
+    merah2 = Style.BRIGHT + Fore.RED
+    biru = Style.NORMAL + Fore.BLUE
+    biru2 = Style.BRIGHT + Fore.BLUE
+    biru3 = Style.BRIGHT + Fore.LIGHTCYAN_EX
+    profcolor = Style.BRIGHT + Back.GREEN + Fore.WHITE
+    losecolor = Style.BRIGHT + Back.RED + Fore.WHITE
+    rccolor = Style.BRIGHT + Back.WHITE + Fore.BLACK
+    rcfontcolor = Style.NORMAL + Fore.BLACK
+    kuning = Style.NORMAL + Fore.YELLOW
+    kuning2 = Style.BRIGHT + Fore.YELLOW
+    cyan = Style.NORMAL + Fore.CYAN
+    cyan2 = Style.BRIGHT + Fore.LIGHTCYAN_EX
+    merah = Fore.LIGHTRED_EX
+    hijau = Fore.LIGHTGREEN_EX
+    biru = Fore.LIGHTBLUE_EX
+    magenta = Fore.LIGHTMAGENTA_EX
+    cyan = Fore.LIGHTCYAN_EX
+    hitam = Fore.LIGHTBLACK_EX
+    putih = Fore.LIGHTWHITE_EX
+    profcolor = Style.BRIGHT + Back.GREEN + Fore.WHITE
+    losecolor = Style.BRIGHT + Back.RED + Fore.WHITE
+    ab = "\033[90m"
+    rd = "\033[91m"
+    ij = "\033[92m"
+    kn = "\033[93m"
+    rs = "\033[0;0m"
+    sp = f"{ab}|{rs}"
+    babi = [ij ,rs, putih,kn, sp]
+    war = random.choice(babi) 
+except ImportError as rrr:
+    exit(f"# module not installed ! {rrr}")
+ 
+#_dumps = lambda obj, **kwargs: ujson.dumps(obj, escape_forward_slashes=False, **kwargs)
+   
+class _printex:
+    def __init__(self, msg, err_code: int = 0):
+        print(msg)
+        sys.exit(err_code)
+
+
+class BLBaseException(Exception):
+    """bancetzLaut base exceptions."""
+
+
+class BLFormatter(BLBaseException):
+    """Beautify exceptions."""
+
+    def __init__(self, err):
+        if type(err).__name__ == "KeyboardInterrupt":
+            _printex(
+                f"\r\x1b[1C\x1b[1K\r\n\n{rd}#Iqbalmedukzz:{rs} {kn}Bot terminated! (ctrl + c).{rs}\n"
+            )
+        else:
+            _errMsg = err
+            _errType = type(err).__name__
+
+            _wantedFrame = {}
+            _unwantedFrame = []
+
+            _stack = traceback.extract_tb(_errMsg.__traceback__)
+            for _ in _stack:
+                if "bin" in _.filename:
+                    _.filename = Path(_.filename).stem
+                elif Path(_.filename).parent.is_relative_to(Path.cwd()):
+                    _.filename = Path(_.filename).stem
+                if _.name != "<module>" and "python" not in _.filename:
+                    if _.filename not in _wantedFrame:
+                        _wantedFrame.update({_.filename: _})
+                    else:
+                        _wantedFrame[_.filename] = _
+                else:
+                    _unwantedFrame.append(_)
+            _stack = [_ for _ in _stack if _ not in _unwantedFrame]
+            _stack = "Traceback (recent call):\n" + "".join(
+                [
+                    ("%s\n" % _.split("\n")[0])
+                    for _ in traceback.format_list(
+                        _unwantedFrame[:1]
+                        if not _wantedFrame
+                        else [v for k, v in _wantedFrame.items()]
+                    )
+                ]
+            )
+            _errStack = _stack
+
+            _printex(
+                f"\n\n{kn}{_errStack}{rs}" f"\n{rd}{_errType}:{rs} {kn}{_errMsg}{rs}\n"
+            )
+  
+class anycaptcha:
+    def __init__(self,anticaptcha_key):
+        self.ses = requests.Session()
+        self.key = anticaptcha_key
+
+    def recaptchav2(self,website_url,website_key):
+        data = {"clientKey":self.key,"task":{"type":"RecaptchaV2TaskProxyless","websiteURL":website_url,"websiteKey":website_key}}
+        req = self.ses.post("https://api.anycaptcha.com/createTask",json=data).json()
+        open("logs_module.txt","a+").write(f"{json.dumps(req)}\n")
+        if req["errorId"] == 0:
+            return req["taskId"]
+        elif req["errorId"] != 0:
+            print(req)
+            return False
+            exit()
+
+    def recaptchav3(self,website_url,website_key,min_score=0.9,page_action=None,isenterprise=False):
+        if page_action and isenterprise:
+            data = {"clientKey":self.key,"task":{"type":"RecaptchaV3TaskProxyless","websiteURL":website_url,"websiteKey":website_key,"minScore":min_score,"pageAction": page_action,"isEnterprise": False}}
+            print(data)
+        elif page_action:
+            data = {"clientKey":self.key,"task":{"type":"RecaptchaV3TaskProxyless","websiteURL":website_url,"websiteKey":website_key,"minScore":min_score,"pageAction": page_action}}
+            print(data)
+        elif isenterprise:
+            data = {"clientKey":self.key,"task":{"type":"RecaptchaV3TaskProxyless","websiteURL":website_url,"websiteKey":website_key,"minScore":min_score,"isEnterprise": False}}
+            print(data)
+        else:
+            data = {"clientKey":self.key,"task":{"type":"RecaptchaV3TaskProxyless","websiteURL":website_url,"websiteKey":website_key,"minScore":min_score}}
+        req = self.ses.post("https://api.anycaptcha.com/createTask",json=data).json()
+        if req["errorId"] == 0:
+            return req["taskId"]
+        elif req["errorId"] != 0:
+            return False
+            print(req)
+            exit()
+
+    def hcaptchawop(self,website_url,website_key):
+        data = {"clientKey":self.key,"task":{"type":"HCaptchaTaskProxyless","websiteURL":website_url,"websiteKey":website_key}}
+        req = self.ses.post("https://api.anycaptcha.com/createTask",json=data).json()
+        open("logs_module.txt","a+").write(f"{json.dumps(req)}\n")
+        if req["errorId"] == 0:
+            return req["taskId"]
+        elif req["errorId"] != 0:
+            print(req)
+            exit()
+
+    def getresult(self,taskid):
+        data = {"clientKey":self.key,"taskId":taskid}
+        while True:
+            try:
+                req = self.ses.post("https://api.anycaptcha.com/getTaskResult",json=data).json()
+                print(f"{putih}# Waiting Get Results Captcha !!",flush=True,end='\r')
+                open("logs_module.txt","a+").write(f"{json.dumps(req)}\n")
+                if req["errorId"] == 0 and req["status"] == "ready":
+                    return req["solution"]["gRecaptchaResponse"]
+                if req["errorId"] != 0:
+                    print(json.dumps(req,indent=4))
+                    #print(f'\t{putih}# {merah}{req["errors"][0]["message"]}')
+                    exit()
+                elif req["status"] == "processing":
+                    time.sleep(2)
+                    continue
+                else:
+                    print(req)
+                    exit()
+            except KeyError:
+                print(req)
+                exit()
+
+
+class anticaptcha:
+    def __init__(self,anticaptcha_key):
+        self.ses = requests.Session()
+        self.key = anticaptcha_key
+
+    def recaptchav2(self,website_url,website_key):
+        data = {"clientKey":self.key,"task":{"type":"RecaptchaV2TaskProxyless","websiteURL":website_url,"websiteKey":website_key}}
+        req = self.ses.post("https://api.anti-captcha.com/createTask",json=data).json()
+        open("logs_module.txt","a+").write(f"{json.dumps(req)}\n")
+        if req["errorId"] == 0:
+            return req["taskId"]
+        elif req["errorId"] != 0:
+            print(req)
+            return False
+            exit()
+
+    def recaptchav3(self,website_url,website_key,min_score=0.9,page_action=None,isenterprise=False):
+        if page_action and isenterprise:
+            data = {"clientKey":self.key,"task":{"type":"RecaptchaV3TaskProxyless","websiteURL":website_url,"websiteKey":website_key,"minScore":min_score,"pageAction": page_action,"isEnterprise": False}}
+            print(data)
+        elif page_action:
+            data = {"clientKey":self.key,"task":{"type":"RecaptchaV3TaskProxyless","websiteURL":website_url,"websiteKey":website_key,"minScore":min_score,"pageAction": page_action}}
+            print(data)
+        elif isenterprise:
+            data = {"clientKey":self.key,"task":{"type":"RecaptchaV3TaskProxyless","websiteURL":website_url,"websiteKey":website_key,"minScore":min_score,"isEnterprise": False}}
+            print(data)
+        else:
+            data = {"clientKey":self.key,"task":{"type":"RecaptchaV3TaskProxyless","websiteURL":website_url,"websiteKey":website_key,"minScore":min_score}}
+        req = self.ses.post("https://api.anti-captcha.com/createTask",json=data).json()
+        if req["errorId"] == 0:
+            return req["taskId"]
+        elif req["errorId"] != 0:
+            return False
+            print(req)
+            exit()
+
+    def hcaptchawop(self,website_url,website_key):
+        data = {"clientKey":self.key,"task":{"type":"HCaptchaTaskProxyless","websiteURL":website_url,"websiteKey":website_key}}
+        req = self.ses.post("https://api.anti-captcha.com/createTask",json=data).json()
+        print(f"{putih}# Waiting Get Results Captcha !!",flush=True,end='\r')
+        open("logs_module.txt","a+").write(f"{json.dumps(req)}\n")
+        if req["errorId"] == 0:
+            return req["taskId"]
+        elif req["errorId"] != 1:
+            print(req)
+            exit()
+
+    def getresult(self,taskid):
+        data = {"clientKey":self.key,"taskId":taskid}
+        while True:
+            try:
+                req = self.ses.post("https://api.anti-captcha.com/getTaskResult",json=data).json()
+                print(f"{putih}# Waiting Get Results Captcha !!",flush=True,end='\r')
+                open("logs_module.txt","a+").write(f"{json.dumps(req)}\n")
+                if req["errorId"] == 0 and req["status"] == "ready":
+                    return req["solution"]["gRecaptchaResponse"]
+                if req["errorId"] != 0:
+                    print(req)
+                    exit()
+                elif req["status"] == "processing":
+                    time.sleep(3)
+                    continue
+                else:
+                    print(req)
+                    exit()
+            except KeyError:
+                print(req)
+                exit()
+
+class kenoapp:
+    def __init__(self):
+        self.sitekey = "7830874c-13ad-4cfe-98d7-e8b019dc1742"
+        self.siteurl = f"https://{mirror}/"
+        req = requests.get("https://pastebin.com/raw/fxLc9LGQ").json()
+        self.note = req["note"]
+        self.urlApi = f"https://{mirror}/_api/graphql"
+        self.ses = requests.Session()
+        self.stake_api = f"https://{mirror}/_api/graphql"
+        self.akunke = 0
+        self.headers = {
+            "accept": "*/*",
+            "accept-language": "en-US,en;q=0.9",
+            "content-type": "application/json",
+            "origin": f"https://{mirror}",
+            "referer": f"https://{mirror}/casino/games/limbo",
+            "User-agent": f"{AGENT}",
+            "cookie": COKIE,
+            "x-lockdown-token": "s5MNWtjTM5TvCMkAzxov"
+            }
+        self.ses.headers.update({
+            "accept": "*/*",
+            "accept-language": "en-US,en;q=0.9",
+            "content-type": "application/json",
+            "origin": f"https://{mirror}",
+            "referer": f"https://{mirror}/casino/games/limbo",
+            "User-agent": f"{AGENT}",
+            "cookie": COKIE,
+            "x-lockdown-token": "s5MNWtjTM5TvCMkAzxov"
+            })
+
+    def kurscrypto(self, meduk1):
+        for kurs321 in meduk1:
+                if kurs321["name"] == COIN:
+                        return kurs321["usd"]
+
+    def kursidr(self, meduk):
+        for kurs321 in meduk:
+                if kurs321["name"] == COIN:
+                        return kurs321["idr"]
+
+    def addres(self, token):
+        data = {
+                "query":"query DepositAddress($chain: CryptoChainEnum, $currency: CryptoCurrencyEnum!, $type: WalletAddressType!, $infoCurrency: CurrencyEnum!) {\n  info {\n    currency(currency: $infoCurrency) {\n      requiredConfirmations\n      __typename\n    }\n    __typename\n  }\n  user {\n    id\n    depositAddress(chain: $chain, currency: $currency, type: $type) {\n      id\n      address\n      currency\n      __typename\n    }\n    __typename\n  }\n}\n",
+                        "operationName":"DepositAddress",
+                        "variables":{
+                        "currency":COIN,
+                        "type":"default",
+                        "infoCurrency":"trx"}}
+        retries = 0
+        while True:
+            retries += 1
+            try:
+                ret = self.ses.post(self.stake_api, json=data, headers = {**self.ses.headers, "x-access-token": token})
+            except Exception as err:
+                if retries <= 3:
+                    continue
+                else:
+                    print(f"Your IP is blocked by stake, skip account")
+                    print(f"cookies Expired")
+                    print(ret)
+                    return
+            else:
+                add = ret.json()["data"]["user"]["depositAddress"]["address"]
+
+                return add
+
+
+    def _user(self):
+        data = {
+            "query": "query initialUserRequest {\n  user {\n    ...UserAuth\n    __typename\n  }\n}\n\nfragment UserAuth on User {\n  id\n  name\n  email\n  hasPhoneNumberVerified\n  hasEmailVerified\n  hasPassword\n  intercomHash\n  createdAt\n  hasTfaEnabled\n  mixpanelId\n  hasOauth\n  flags {\n    flag\n    __typename\n  }\n  roles {\n    name\n    __typename\n  }\n  balances {\n    ...UserBalanceFragment\n    __typename\n  }\n  activeClientSeed {\n    id\n    seed\n    __typename\n  }\n  previousServerSeed {\n    id\n    seed\n    __typename\n  }\n  activeServerSeed {\n    id\n    seedHash\n    nextSeedHash\n    nonce\n    blocked\n    __typename\n  }\n  __typename\n}\n\nfragment UserBalanceFragment on UserBalance {\n  available {\n    amount\n    currency\n    __typename\n  }\n  vault {\n    amount\n    currency\n    __typename\n  }\n  __typename\n}\n",
+            "operationName": "initialUserRequest",
+            "variables": {},
+        }
+        retries = 0
+        while True:
+            retries += 1
+            try:
+                ret = self.ses.post(self.stake_api, json=data)
+            except Exception as err:
+                if retries <= 3:
+                    continue
+                else:
+                    print(f"Your IP is blocked by stake, skip account")
+                    print(f"cookies Expired")
+                    print(ret)
+                    return
+            else:
+                aku = ret.json()["data"]["user"]["createdAt"]
+
+                return aku
+
+    def vip(self):
+        vip = {
+            "query": "query VipProgressMeta {\n  user {\n    id\n    flagProgress {\n      flag\n      progress\n    }\n  }\n}\n",
+            "variables": {},
+            }
+        asu = self.ses.post(self.urlApi, json=vip, headers=self.headers)
+        flag = asu.json()["data"]["user"]["flagProgress"]["flag"]
+        progress = asu.json()["data"]["user"]["flagProgress"]["progress"] * 100
+
+        return flag, progress
+    
+    def _ticket(self, token):
+        _myACC = self._my_account(token)
+        if not _myACC:
+            return
+        else:
+            myName, myEmail, myBal = _myACC
+        uwu =  self.addres(token)
+        if not uwu:
+            return
+        else:
+            addres = uwu
+        #opo = self._user()
+        #if not opo:
+        #    return
+        #else:
+        #    aku = opo
+        #vip = self.vip()
+        #if not vip:
+        #    return
+        #else:
+            #flag, progress = vip
+            self.ses.headers["x-access-token"] = token
+            #### DATA UTAMA
+            data_kurs = {  "query": "query CurrencyConversionRate {\n  info {\n    currencies {\n      name\n      eur: value(fiatCurrency: eur)\n      jpy: value(fiatCurrency: jpy)\n      usd: value(fiatCurrency: usd)\n      brl: value(fiatCurrency: brl)\n      cad: value(fiatCurrency: cad)\n      cny: value(fiatCurrency: cny)\n      idr: value(fiatCurrency: idr)\n      inr: value(fiatCurrency: inr)\n      krw: value(fiatCurrency: krw)\n      php: value(fiatCurrency: php)\n      rub: value(fiatCurrency: rub)\n      mxn: value(fiatCurrency: mxn)\n      dkk: value(fiatCurrency: dkk)\n    }\n  }\n}\n","variables": {}}
+            nonce_seed = {  "query": "query UserSeedPair {\n  user {\n    id\n    activeClientSeed {\n      id\n      seed\n      __typename\n    }\n    activeServerSeed {\n      id\n      nonce\n      seedHash\n      nextSeedHash\n      __typename\n    }\n    activeCasinoBets {\n      id\n      amount\n      currency\n      game\n      createdAt\n      __typename\n    }\n    __typename\n  }\n}\n","operationName": "UserSeedPair"}
+            data_raffle = {  "query": "query ActiveRaffles {\n  activeRaffles {\n    id\n    name\n    description\n    reward\n    startTime\n    endTime\n    ticketCount\n    raffleUser {\n      ticketCount\n      __typename\n    }\n    __typename\n  }\n}\n", "operationName": "ActiveRaffles"}
+            #### DATA POST
+            seed2 = self.ses.post(self.stake_api, json=nonce_seed)
+            req_kurs = self.ses.post(self.stake_api, json=data_kurs)
+            raffle = self.ses.post(self.stake_api,json=data_raffle,headers=self.ses.headers)
+            #print(raffle.text)
+
+            #### DAAT LIST
+            seede = seed2.json()['data']['user']['activeServerSeed']['nonce']
+            kurs_crypto_usd = self.kurscrypto(req_kurs.json()['data']['info']['currencies'])
+            kurs_crypto_idr = self.kursidr(req_kurs.json()['data']['info']['currencies'])
+            raffle2 = raffle.json()["data"]["activeRaffles"][0]["raffleUser"]#["ticketCount"]
+            #if raffle2 <= 0:
+            #    print("skipper")
+            #    return
+            #else:
+
+            print(f"{rs}***  {ij}Username {rs}: {kn}{myName}")
+            print(f"{rs}***  {ij}Email    {rs}: {kn}{myEmail}")
+            print(f"{rs}***  {ij}Balance  {rs}: {kn}{myBal[COIN]:.8f} {COIN.lower()} /",round(myBal[COIN]*kurs_crypto_idr),"IDR / $",round(myBal[COIN]*kurs_crypto_usd,2))
+            print(f"{rs}***  {ij}Addres   {rs}: {kn}{addres}")
+            print(f"{rs}***  {ij}Nounce   {rs}: {kn}{seede}")
+            #print(f"{rs}***  {ij}Rank     {rs}: {kn}{flag} ~ {progress:.5f}%")
+            print(f"{rs}***  {ij}Ticket   {rs}: {kn}{raffle2}")
+            #print(f"{rs}***  {ij}Regris   {rs}: {kn}{aku}")
+
+            if not data_raffle:
+                return
+            else:
+                raffle = self.ses.post(self.stake_api, json=data_raffle)
+
+                if "errors" in raffle.json():
+                    print(
+                    f"{kn}***  Fail: {raffle.json()['errors'][0]['errorType']}\n"
+                    f"{kn}***  {raffle.json()['errors'][0]['message']}"
+                        )
+
+    def iqbalmeduk(self,token):
+        _myACC = self._my_account(token)
+        if not _myACC:
+            return
+#        vip = self.vip()
+#        if not vip:
+#            return
+        else:
+#            progress = vip
+            myName, myEmail, myBal = _myACC
+            #self.ses.headers["x-access-token"] = token
+            #### DATA UTAMA
+            self.ses.headers["x-access-token"] = token
+            ##self.ses.headers.update(self.headers)
+            data_kurs = {  "query": "query CurrencyConversionRate {\n  info {\n    currencies {\n      name\n      eur: value(fiatCurrency: eur)\n      jpy: value(fiatCurrency: jpy)\n      usd: value(fiatCurrency: usd)\n      brl: value(fiatCurrency: brl)\n      cad: value(fiatCurrency: cad)\n      cny: value(fiatCurrency: cny)\n      idr: value(fiatCurrency: idr)\n      inr: value(fiatCurrency: inr)\n      krw: value(fiatCurrency: krw)\n      php: value(fiatCurrency: php)\n      rub: value(fiatCurrency: rub)\n      mxn: value(fiatCurrency: mxn)\n      dkk: value(fiatCurrency: dkk)\n    }\n  }\n}\n","variables": {}}
+            nonce_seed = {  "query": "query UserSeedPair {\n  user {\n    id\n    activeClientSeed {\n      id\n      seed\n      __typename\n    }\n    activeServerSeed {\n      id\n      nonce\n      seedHash\n      nextSeedHash\n      __typename\n    }\n    activeCasinoBets {\n      id\n      amount\n      currency\n      game\n      createdAt\n      __typename\n    }\n    __typename\n  }\n}\n","operationName": "UserSeedPair"}
+            data_raffle = {  "query": "query ActiveRaffles {\n  activeRaffles {\n    id\n    name\n    description\n    reward\n    startTime\n    endTime\n    ticketCount\n    raffleUser {\n      ticketCount\n      __typename\n    }\n    __typename\n  }\n}\n", "operationName": "ActiveRaffles"}
+            #### DATA POST
+            seed2 = self.ses.post(self.stake_api, json=nonce_seed)
+            req_kurs = self.ses.post(self.stake_api, json=data_kurs)
+            raffle = self.ses.post(self.stake_api,json=data_raffle,headers=self.ses.headers)
+            if "errors" in seed2.text:
+                print(seed2.text)
+            if "errors" in raffle.text:
+                print(raffle.text)
+            else:
+                try:
+                    #### DAAT LIST
+                    seede = seed2.json()['data']['user']['activeServerSeed']['nonce']
+                    seede = None if seede == "none" else seede
+                    kurs_crypto_usd = self.kurscrypto(req_kurs.json()['data']['info']['currencies'])
+                    kurs_crypto_idr = self.kursidr(req_kurs.json()['data']['info']['currencies'])
+
+                    print(f"{rs}***  {ij}Username {rs}: {kn}{myName}")
+                    print(f"{rs}***  {ij}Email    {rs}: {kn}{myEmail}")
+                    print(f"{rs}***  {ij}Balance  {rs}: {kn}{myBal[COIN]:.8f} {COIN.lower()} /",round(myBal[COIN]*kurs_crypto_idr),"IDR / $",round(myBal[COIN]*kurs_crypto_usd,2))
+                    print(f"{rs}***  {ij}Nounce   {rs}: {kn}{seede}")
+                    
+                except json.decoder.JSONDecodeError as req:
+                    print(req.text)
+                    exit()
+            
+    def getNumber(self):
+        list_number = []
+        while True:
+            number = random.randint(0,39)
+            if number in list_number:
+                continue
+            elif len(list_number) == number:
+                return list_number
+            else:
+                list_number.append(number)
+
+    def verification_device(self):
+        ListToken = open("token.txt").read().splitlines()
+        for token in ListToken:
+            data = {
+             "query": "query initialUserRequest {\n  user {\n    ...UserAuth\n    __typename\n  }\n}\n\nfragment UserAuth on User {\n  id\n  name\n  email\n  hasPhoneNumberVerified\n  hasEmailVerified\n  hasPassword\n  intercomHash\n  createdAt\n  hasTfaEnabled\n  mixpanelId\n  hasOauth\n  flags {\n    flag\n    __typename\n  }\n  roles {\n    name\n    __typename\n  }\n  balances {\n    ...UserBalanceFragment\n    __typename\n  }\n  activeClientSeed {\n    id\n    seed\n    __typename\n  }\n  previousServerSeed {\n    id\n    seed\n    __typename\n  }\n  activeServerSeed {\n    id\n    seedHash\n    nextSeedHash\n    nonce\n    blocked\n    __typename\n  }\n  __typename\n}\n\nfragment UserBalanceFragment on UserBalance {\n  available {\n    amount\n    currency\n    __typename\n  }\n  vault {\n    amount\n    currency\n    __typename\n  }\n  __typename\n}\n",
+             "operationName": "initialUserRequest",
+             "variables": {}
+                }
+            #self.headers["Content-Length"] = str(len(data))
+            self.ses.headers["x-access-token"] = token
+            #self.ses.headers.update(self.headers)
+            try:
+                req = self.ses.post(self.urlApi,json=data,timeout=17)
+                print(req)
+            except ReadTimeoutError:
+                print(req)
+            for i in req:
+                getusername = req.json()['data']['user']['name']
+                req = requests.get("https://pastebin.com/raw/RJVsG7B0").json()
+                if getusername in req["list-username"]:
+                    return
+                else:
+                    print()
+                    print(getusername,"\n")
+                    print("Your username Unlisted member of XYZ Team Project ! :")
+                    time.sleep(2)
+                    sys.exit()
+            
+    def verification_ip(self):
+        hostname = socket.gethostname()
+        IPAddr = socket.gethostbyname(hostname)
+        req = requests.get("https://pastebin.com/raw/0NCUTVFu").json()
+        self.note = req["note"]
+        if IPAddr in req["meduk"]:
+            return
+        else:
+            print()
+            print(IPAddr,"\n")
+            print(hostname)
+            print("Your Unlisted member of XYZ Team Project ! :")
+            time.sleep(2)
+            sys.exit()
+
+    def formatAmo(self,amo):
+        return "{:.8f}".format(amo)
+
+    def _my_account(self, token):
+        data = {
+             "query": "query initialUserRequest {\n  user {\n    ...UserAuth\n    __typename\n  }\n}\n\nfragment UserAuth on User {\n  id\n  name\n  email\n  hasPhoneNumberVerified\n  hasEmailVerified\n  hasPassword\n  intercomHash\n  createdAt\n  hasTfaEnabled\n  mixpanelId\n  hasOauth\n  flags {\n    flag\n    __typename\n  }\n  roles {\n    name\n    __typename\n  }\n  balances {\n    ...UserBalanceFragment\n    __typename\n  }\n  activeClientSeed {\n    id\n    seed\n    __typename\n  }\n  previousServerSeed {\n    id\n    seed\n    __typename\n  }\n  activeServerSeed {\n    id\n    seedHash\n    nextSeedHash\n    nonce\n    blocked\n    __typename\n  }\n  __typename\n}\n\nfragment UserBalanceFragment on UserBalance {\n  available {\n    amount\n    currency\n    __typename\n  }\n  vault {\n    amount\n    currency\n    __typename\n  }\n  __typename\n}\n",
+             "operationName": "initialUserRequest",
+             "variables": {}
+        }
+        retries = 0
+        while True:
+            retries += 1
+            try:
+                ret = self.ses.post(self.urlApi, json=data, headers = {**self.headers, "x-access-token": token})
+                ret = ret.json()
+            except Exception as err:
+                if retries <= 3:
+                    continue
+                else:
+                    print(f"Your IP is blocked by stake, skip account")
+                    print(f"cookies Expired")
+                    #
+                    return
+            else:
+                if "errors" in ret:
+                    if ret["errors"][0]["errorType"] == "disabledSession":
+                        print(f"{ij}[•] {self.get_timet()} {hijau}Fail: Session disabled!")
+                    else:
+                        print(
+                            f"{ij}[•] {self.get_timet()} {merah}Fail: {ret['errors'][0]['errorType']}\n"
+                            f"{ij}[•] {self.get_timet()} {merah}{ret['errors'][0]['message']}"
+                        )
+                    print(f"{ij}[•] {self.get_timet()} {merah}Account skipped!!")
+                    return
+                else:
+                    username = ret['data']['user']['name']
+                    email = f"{ret['data']['user']['email'].split('@')[0][:4]}**"\
+                            f"@{ret['data']['user']['email'].split('@')[1].split('.')[0]}"
+                    balance = {
+                        currency: amount
+                        for amount, currency, _ in
+                        [
+                          i['available'].values() for i in ret['data']['user']['balances']
+                        ]
+                    }
+                    return [username, email, balance]
+
+    def countdown(self,t):
+        while t:
+            print(f"# [●    ] sleep {t} seconds ",flush=True,end='\r')
+            time.sleep(0.25)
+            print(f"# [●●   ] sleep {t} seconds ",flush=True,end='\r')
+            time.sleep(0.25)
+            print(f"# [●●●  ] sleep {t} seconds ",flush=True,end='\r')
+            time.sleep(0.25)
+            print(f"# [●●●● ] sleep {t} seconds ",flush=True,end='\r')
+            time.sleep(0.25)
+            print(f"# [●●●●●] sleep {t} seconds ",flush=True,end='\r')
+            time.sleep(0.25)
+            t -= 1
+        print("                                        ",flush=True,end='\r')
+
+    def accounts(self,token, target: str):
+        """Get accounts information
+
+        :param target: username target
+
+        :return: accounts detail if successful, None Otherwise
+        :rtype: dict, optional
+
+        """
+        data = {
+            "query": "query SendTipMeta($name: String) {\n  user(name: $name) {\n    id\n  }\n  self: user {\n    id\n    name\n    hasTfaEnabled\n    isTfaSessionValid\n    balances {\n      available {\n        amount\n        currency\n      }\n    }\n  }\n}\n",
+            "operationName": "SendTipMeta",
+            "variables": {"name": target},
+        }
+        ret = self.ses.post(self.urlApi, json=data, headers = {**self.headers, "x-access-token": token})
+        ret = ret.json()
+        print(ret)
+
+        if "errors" in ret:
+            targetId = data["user"]["id"]
+
+            return {"targetId": targetId}
+
+    def tip(self):
+        print("this feature maitance !!")
+        sleep(5)
+        sys.exit()
+
+
+    def _cekaddres(self, token):
+        _myACC = self._my_account(token)
+        if not _myACC:
+            return
+        else:
+            myName, myEmail, myBal = _myACC
+        data = {
+                "query":"query DepositAddress($chain: CryptoChainEnum, $currency: CryptoCurrencyEnum!, $type: WalletAddressType!, $infoCurrency: CurrencyEnum!) {\n  info {\n    currency(currency: $infoCurrency) {\n      requiredConfirmations\n      __typename\n    }\n    __typename\n  }\n  user {\n    id\n    depositAddress(chain: $chain, currency: $currency, type: $type) {\n      id\n      address\n      currency\n      __typename\n    }\n    __typename\n  }\n}\n",
+                        "operationName":"DepositAddress",
+                        "variables":{
+                        "currency":COIN,
+                        "type":"default",
+                        "infoCurrency":"trx"}}
+        #self.headers["Content-Length"] = str(len(data))
+        self.ses.headers["x-access-token"] = token
+        #self.ses.headers.update(self.headers)
+        req = self.ses.post(self.urlApi,json=data)
+        open("result.json","w").write(req.text)
+        if "errors" in req.text:
+            print(f"{merah}{req.json()['errors'][0]['message'].upper()}")
+            return
+        else:
+            try:
+                reload_amount = req.json()["data"]["user"]["depositAddress"]["address"]
+                print(f"{war}[-] {biru}{self.get_timet()} {ij}Uname: {putih}{myName}")
+                print(f"{war}[-] {biru}{self.get_timet()} {ij}Addres: {putih}{reload_amount}")
+
+                return
+            except json.decoder.JSONDecodeError:
+                print(req.text)
+                exit()
+
+    def get_crypto_index(self,data):
+        if data.lower() == 'bch':
+            return 0
+        if data.lower() == 'btc':
+            return 1
+        if data.lower() == 'doge':
+            return 2
+        if data.lower() == 'eos':
+            return 3
+        if data.lower() == 'eth':
+            return 4
+        if data.lower() == 'ltc':
+            return 5
+        if data.lower() == 'trx':
+            return 6
+        if data.lower() == 'xrp':
+            return 7
+        if data.lower() == 'bnb':
+            return 8
+        if data.lower() == 'link':
+            return 9
+        if data.lower() == 'usdt':
+            return 10
+        if data.lower() == 'shib':
+            return 11
+        if data.lower() == 'matic':
+            return 12
+        if data.lower() == 'busd':
+            return 13
+        if data.lower() == 'sand':
+            return 14
+
+    def formater(self,data):
+        return "{:.8f}".format(data)
+        
+    def _captcha(self):
+        """
+            """
+        solver = hCaptchaProxyless()
+        #solver.set_verbose(1)
+        #solver.set_key(ANTICAPTCHA_KEY)
+        #solver.set_website_url('https://stake.ac/')
+        #solver.set_website_key('7830874c-13ad-4cfe-98d7-e8b019dc1742')
+        #solver.set_proxy_address("161.123.208.123")
+        #solver.set_proxy_port(6367)
+        #solver.set_proxy_login("bakolbot")
+        #solver.set_proxy_password("bakolbot")
+        #solver.set_user_agent(AGENT)
+        #solver.set_cookies(COKIE)
+        #solver = hCaptchaProxyless()
+        #solver.set_verbose(1) 45.249.104.141:6436:bakolbot:bakolbot
+        solver.set_key(ANTICAPTCHA_KEY)
+        solver.set_website_url('https://stake.kim/')
+        solver.set_website_key('7830874c-13ad-4cfe-98d7-e8b019dc1742')
+        solver.set_soft_id(0)
+        ret = solver.solve_and_return_solution()
+        if ret != 0:
+            print("already solver",flush=True,end='\r')
+            return ret
+        else:
+            exit(f"\n{solver.err_string}")
+            
+    def get_timet(self):
+        localtime = time.localtime()
+        jam = str(localtime.tm_hour).zfill(2)
+        menit = str(localtime.tm_min).zfill(2)
+        detik = str(localtime.tm_sec).zfill(2)
+        return f"[{jam}:{menit}:{detik}]"
+
+    def reload(self,token):
+        TOKEN = "5702690829:AAFc9S9wAL7tCAGmOG4zLXmgmTHCVFOkLwc"
+        chat_id = "-1001896950021"
+        _myACC = self._my_account(token)
+        if not _myACC:
+            return
+        else:
+            myName, myEmail, myBal = _myACC
+        print(f"{war}[-] {biru}{self.get_timet()} {ij}{myName} {putih}")
+        captcha = self._captcha()
+        print(f'{war}[-] {biru}{self.get_timet()} {ij}success {putih}bypass captcha                     ')
+        data = {"query":"mutation ClaimFaucet($currency: CurrencyEnum!, $captcha: String!) {\n  claimReload: claimFaucet(currency: $currency, captcha: $captcha) {\n    reload: faucet {\n      user {\n        id\n        reload: faucet {\n          id\n          amount(currency: $currency)\n          active\n          claimInterval\n          lastClaim\n   expireAt\n          createdAt\n          updatedAt\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n","operationName":"ClaimFaucet","variables":{"currency":COIN.lower(),"captcha":captcha}}
+        #self.headers["Content-Length"] = str(len(data))
+        data_kurs = {  "query": "query CurrencyConversionRate {\n  info {\n    currencies {\n      name\n      eur: value(fiatCurrency: eur)\n      jpy: value(fiatCurrency: jpy)\n      usd: value(fiatCurrency: usd)\n      brl: value(fiatCurrency: brl)\n      cad: value(fiatCurrency: cad)\n      cny: value(fiatCurrency: cny)\n      idr: value(fiatCurrency: idr)\n      inr: value(fiatCurrency: inr)\n      krw: value(fiatCurrency: krw)\n      php: value(fiatCurrency: php)\n      rub: value(fiatCurrency: rub)\n      mxn: value(fiatCurrency: mxn)\n      dkk: value(fiatCurrency: dkk)\n    }\n  }\n}\n","variables": {}}
+        self.ses.headers["x-access-token"] = token
+        req_kurs = self.ses.post(self.stake_api, json=data_kurs)
+        #self.ses.headers.update(self.headers)
+        req = self.ses.post(self.urlApi,json=data)
+        open("reload.json","a+").write(f"{json.dumps(req.json())}\n")
+        if "errors" in req.text:
+            print(f'{war}[-] {biru}{self.get_timet()} {merah}{req.json()["errors"][0]["message"]}')
+            response = requests.get("https://api.telegram.org/bot" + TOKEN + "/sendMessage" + "?chat_id=" + chat_id + "&text=" + f"Username : {myName}\nBalance : {myBal[COIN]:.8f} {COIN.upper()}\nError : {req.text}")
+            return
+        else:
+            try:
+                kurs_crypto_usd = self.kurscrypto(req_kurs.json()['data']['info']['currencies'])
+                kurs_crypto_idr = self.kursidr(req_kurs.json()['data']['info']['currencies'])
+                index_coin = self.get_crypto_index(COIN)
+                reload_amount = req.json()["data"]["claimReload"]["reload"]["user"]["reload"]["amount"]
+                ival = req.json()["data"]["claimReload"]["reload"]["user"]["reload"]["claimInterval"]
+                wkt = req.json()["data"]["claimReload"]["reload"]["user"]["reload"]["lastClaim"]
+                print(f"{war}[-] {biru}{self.get_timet()} {ij}date: {putih}{wkt} ~ {ival}")
+                print(f"{war}[-] {biru}{self.get_timet()} {ij}waiting: {putih}{ival} detik")
+                print(f"{war}[-] {biru}{self.get_timet()} {ij}reload: {putih}{self.formater(reload_amount)} {COIN.upper()} /",round(myBal[COIN]*kurs_crypto_idr),"IDR / $",round(myBal[COIN]*kurs_crypto_usd,2))
+                print(f"{war}[-] {biru}{self.get_timet()} {ij}Balance: {putih}{myBal[COIN] + reload_amount:.8f} {COIN.upper()} /",round(myBal[COIN]*kurs_crypto_idr),"IDR / $",round(myBal[COIN]*kurs_crypto_usd,2))
+                response = requests.get("https://api.telegram.org/bot" + TOKEN + "/sendMessage" + "?chat_id=" + chat_id + "&text=" + f"Username : {myName}\nBalance {myBal[COIN]:.8f} {COIN.upper()}\nSuccess claim {reload_amount:.8f} {COIN.upper()}\nLast Balance : {myBal[COIN] + reload_amount:.8f} {COIN.upper()}")
+
+                return
+            except json.decoder.JSONDecodeError:
+                print(req.text)
+                exit()
+
+    def parsBalance(self,data):
+        for balance in data:
+            if balance["available"]["currency"] == COIN.lower():
+                return balance["available"]["amount"]
+
+    def kenobet(self,token):
+        _myACC = self._my_account(token)
+        if not _myACC:
+            return
+        else:
+            myName, myEmail, myBal = _myACC
+        print(f"{putih}• {myName.upper()} | {myBal[COIN]:.8f} {COIN.upper()}")
+        wager = 0
+        totalRoll = 0
+        profit = 0
+        loseStrike = 0
+        totalLose = 0
+        winStrike = 0
+        totalWin = 0
+        lose1 = 0
+        lose2 = 0
+        data_kurs = {  "query": "query CurrencyConversionRate {\n  info {\n    currencies {\n      name\n      eur: value(fiatCurrency: eur)\n      jpy: value(fiatCurrency: jpy)\n      usd: value(fiatCurrency: usd)\n      brl: value(fiatCurrency: brl)\n      cad: value(fiatCurrency: cad)\n      cny: value(fiatCurrency: cny)\n      idr: value(fiatCurrency: idr)\n      inr: value(fiatCurrency: inr)\n      krw: value(fiatCurrency: krw)\n      php: value(fiatCurrency: php)\n      rub: value(fiatCurrency: rub)\n      mxn: value(fiatCurrency: mxn)\n      dkk: value(fiatCurrency: dkk)\n    }\n  }\n}\n","variables": {}}
+        self.ses.headers["x-access-token"] = token
+        req_kurs = self.ses.post(self.stake_api, json=data_kurs)
+        kurs_crypto_usd = self.kurscrypto(req_kurs.json()['data']['info']['currencies'])
+        awal = datetime.now().replace(microsecond=0)
+        bet = basebet
+        #ongko = ["low","low","medium","high"]
+        Risk = random.choice(resiko)
+
+        ## bikin variable baru buat nampung `reset if profit`
+        lastProfit = profit
+        reqbal = self.ses.post(self.urlApi,json={"query":"query UserBalances {\n  user {\n    id\n    balances {\n      available {\n        amount\n        currency\n        __typename\n      }\n      vault {\n        amount\n        currency\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n","operationName":"UserBalances"},headers=self.headers,timeout=60000).json()
+        balance = float(self.formatAmo(self.parsBalance(reqbal["data"]["user"]["balances"])))
+
+        retries = 0
+        while True:
+            reqbal = self.ses.post(self.urlApi,json={"query":"query UserBalances {\n  user {\n    id\n    balances {\n      available {\n        amount\n        currency\n        __typename\n      }\n      vault {\n        amount\n        currency\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n","operationName":"UserBalances"},headers=self.headers,timeout=60000).json()
+            balance = float(self.formatAmo(self.parsBalance(reqbal["data"]["user"]["balances"])))
+            kurs_crypto_idr = self.kursidr(req_kurs.json()['data']['info']['currencies'])
+            lose1 = 0
+            retries += 1
+            #data ={"query":"mutation PlinkoBet($amount: Float!, $currency: CurrencyEnum!, $risk: CasinoGamePlinkoRiskEnum!, $rows: Int!, $identifier: String!) {\n  plinkoBet(\n    amount: $amount\n    currency: $currency\n    risk: $risk\n    rows: $rows\n    identifier: $identifier\n  ) {\n    ...CasinoBet\n    state {\n      ...CasinoGamePlinko\n    }\n  }\n}\n\nfragment CasinoBet on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n  }\n}\n\nfragment CasinoGamePlinko on CasinoGamePlinko {\n  risk\n  rows\n  point\n  path\n}\n","variables":{"currency":COIN,"amount":bet,"rows":pin,"risk":"low","identifier":"PGt_Wd9sfOJG0P6Txcl_u"}}
+            data = {"query":"mutation KenoBet($amount: Float!, $currency: CurrencyEnum!, $numbers: [Int!]!, $identifier: String!, $risk: CasinoGameKenoRiskEnum) {\n  kenoBet(\n    amount: $amount\n    currency: $currency\n    numbers: $numbers\n    risk: $risk\n    identifier: $identifier\n  ) {\n    ...CasinoBet\n    state {\n      ...CasinoGameKeno\n    }\n  }\n}\n\nfragment CasinoBet on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n  }\n}\n\nfragment CasinoGameKeno on CasinoGameKeno {\n  drawnNumbers\n  selectedNumbers\n  risk\n}\n","variables":{"numbers":Number,"risk":Risk,"amount":bet,"currency":COIN,"identifier":"Mdc2nSkzA2MIoXXLS_SWL"}}
+            req = self.ses.post(self.urlApi,json=data, headers=self.headers,timeout=7)
+            open("keno.txt","a+").write(f"{json.dumps(req.json())}\n")
+            if "errors" in req.text:
+                print(f"{merah}• {req.json()['errors'][0]['message'].upper()}")
+                print(f"{ij}• Skipping Next Account !!!\n")
+                return
+            if myBal[COIN] <= 0:
+                print(f"  ** skipped!")
+                return
+            else:
+                try:
+                    payoutMultipler = req.json()["data"]["kenoBet"]["payoutMultiplier"]
+                    payout = req.json()["data"]["kenoBet"]["payout"]
+                    amount = req.json()["data"]["kenoBet"]["amount"]
+                    #resul = req.json()["data"]["limboBet"]["state"]["result"]
+                    akhir = datetime.now().replace(microsecond=0)
+                    waktu = akhir - awal
+                    totalRoll += 1
+                    wager += amount
+                    if payout > 0:
+                        Risk = random.choice(resiko)
+                        totalLose = 0
+                        warna = Fore.LIGHTYELLOW_EX
+                        totalWin += 1
+                        profit += (payout - amount)
+                        if totalWin > winStrike:
+                            winStrike += 1
+                        if ifwin != 0:
+                            ## implementasi `reset if profit`
+                            if profit >= (lastProfit + resetIfProfit):
+                                bet = basebet
+                                lastProfit = profit
+                            else:
+                                ## kalok `reset if profit` belon terpenuhi, kalikan tarohan dg `if win`
+                                bet *= ifwin
+                        else:
+                            bet = basebet
+                        print(f"{ij}[+]{res} {war}{profit:.8f} {ij}[!]{res} {war}{amount:.8f} {ij}B:{war}{balance:.8f} {payoutMultipler:<4} => {Risk}")
+                    else:
+                        #ongko = ["low","low","medium","high"]
+                        Risk = random.choice(resiko)
+                        totalWin = 0
+                        warna = Fore.LIGHTYELLOW_EX
+                        totalLose += 1
+                        profit -= amount
+                        if totalLose > loseStrike:
+                            loseStrike += 1
+                        if iflose != 0:
+                            bet *= iflose
+                        else:
+                            bet = basebet
+                        print(f"{ij}[-]{res} {war}{profit:.8f} {ij}[!]{res} {war}{amount:.8f} {ij}B:{war}{balance:.8f} {payoutMultipler:<4} => {Risk}")
+                    print(f" {putih} {self.get_timet()} {rd}L ({totalLose}/{loseStrike}) {ij}W ({totalWin}/{winStrike}) {kn}[{waktu}]",flush=True,end='\r')
+                    if profit >= targetprofit:
+                        print()
+                        print(f"{ij} • TARGET PROFIT REACTED !")
+                        print(f"{ij} • Profit  : {targetprofit:.8f} {COIN.lower()} Terpenuhi !")
+                        print(f"{ij} • Balance : {myBal[COIN]:.8f} {COIN.lower()}/",round(myBal[COIN]*kurs_crypto_idr),"IDR / $",round(myBal[COIN]*kurs_crypto_usd,2))
+                        print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")
+                        print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
+                        return
+                    if totalRoll >= troll:
+                        print()
+                        print(f"{ij} • TARGET ROLL REACTED !")
+                        print(f"{ij} • Rools   : {troll} Terpenuhi !")
+                        print(f"{ij} • Balance : {myBal[COIN]:.8f} {COIN.lower()}/",round(myBal[COIN]*kurs_crypto_idr),"IDR / $",round(myBal[COIN]*kurs_crypto_usd,2))
+                        print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")
+                        print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
+                        return 
+                    if myBal[COIN] >= targetbalance:
+                        print()                  
+                        print(f"{ij} • TARGET BALANCE REACTED !")
+                        print(f"{ij} • Target  : {targetbalance:.8f} {COIN.lower()} Terpenuhi !")
+                        print(f"{ij} • Balance : {myBal[COIN]:.8f} {COIN.lower()}/",round(myBal[COIN]*kurs_crypto_idr),"IDR / $",round(myBal[COIN]*kurs_crypto_usd,2))
+                        print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")()
+                        print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
+                        return
+                    if profit <= -targetlose:
+                        print()
+                        print(f"{ij} • TARGET LOSE REACTED !")
+                        print(f"{ij} • Target  : -{targetlose:.8f} LOSE Terpenuhi !")
+                        print(f"{ij} • Balance : {myBal[COIN]:.8f} {COIN.lower()}")
+                        print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")
+                        print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
+                        return
+                    
+                except json.decoder.JSONDecodeError:
+                    print(req.text)
+                    exit()
+
+    def _mines(self,token):
+        _myACC = self._my_account(token)
+        if not _myACC:
+            return
+        else:
+            myName, myEmail, myBal = _myACC
+        print(f"{putih}{myName.upper()} | {myBal[COIN]:.8f} {COIN.upper()}\n")
+        wager = 0
+        totalRoll = 0
+        profit = 0
+        loseStrike = 0
+        totalLose = 0
+        winStrike = 0
+        totalWin = 0
+        lose = 0
+        awal = datetime.now().replace(microsecond=0)
+        bet = basebet
+        #chance = random.uniform(Min1,Max1)
+        lastProfit = profit
+        retries = 0
+        data = {"query":"mutation MinesBet($amount: Float!, $currency: CurrencyEnum!, $minesCount: Int!, $fields: [Int!], $identifier: String) {\n  minesBet(\n    amount: $amount\n    currency: $currency\n    minesCount: $minesCount\n    fields: $fields\n    identifier: $identifier\n  ) {\n    ...CasinoBet\n    state {\n      ...CasinoGameMines\n    }\n  }\n}\n\nfragment CasinoBet on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n  }\n}\n\nfragment CasinoGameMines on CasinoGameMines {\n  mines\n  minesCount\n  rounds {\n    field\n    payoutMultiplier\n  }\n}\n","variables":{"amount":bet,"currency":COIN,"identifier":"uyYogjoBR2xsKDccIUpla","minesCount":9,"fields":[0,2,4,7,10,14,16,22,18,24,20]}}
+        self.headers["Content-Length"] = str(len(data))
+        self.ses.headers["x-access-token"] = token
+        self.ses.headers.update(self.headers)
+
+        while True:
+            data = {"query":"query BetIid($betId: String) {\n bet(betId: $betId){\n id \n iid \n __typename\n }\n }\n","operationName":"BetIid","variables":{"betId":betid}}
+            try:
+                req1 = self.ses.post(self.urlApi,json=data,timeout=7).json()
+                print(req1)
+                #for betid in bett.values():
+                betid = req1["data"]["bet"]["iid"]
+                #betid = betid.replace("house:"," casino:#")
+            except ReadTimeoutError:
+                 pass
+            else:    
+                lose1 = 0
+                retries += 1
+                #data ={"query":"mutation PlinkoBet($amount: Float!, $currency: CurrencyEnum!, $risk: CasinoGamePlinkoRiskEnum!, $rows: Int!, $identifier: String!) {\n  plinkoBet(\n    amount: $amount\n    currency: $currency\n    risk: $risk\n    rows: $rows\n    identifier: $identifier\n  ) {\n    ...CasinoBet\n    state {\n      ...CasinoGamePlinko\n    }\n  }\n}\n\nfragment CasinoBet on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n  }\n}\n\nfragment CasinoGamePlinko on CasinoGamePlinko {\n  risk\n  rows\n  point\n  path\n}\n","variables":{"currency":COIN,"amount":bet,"rows":pin,"risk":"low","identifier":"PGt_Wd9sfOJG0P6Txcl_u"}}
+                data= {"query":"mutation MinesBet($amount: Float!, $currency: CurrencyEnum!, $minesCount: Int!, $fields: [Int!], $identifier: String) {\n  minesBet(\n    amount: $amount\n    currency: $currency\n    minesCount: $minesCount\n    fields: $fields\n    identifier: $identifier\n  ) {\n    ...CasinoBet\n    state {\n      ...CasinoGameMines\n    }\n  }\n}\n\nfragment CasinoBet on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n  }\n}\n\nfragment CasinoGameMines on CasinoGameMines {\n  mines\n  minesCount\n  rounds {\n    field\n    payoutMultiplier\n  }\n}\n","variables":{"amount":bet,"currency":COIN,"identifier":"uyYogjoBR2xsKDccIUpla","minesCount":9,"fields":[0,2,4,7,10,14,16,22,18,24,20]}}
+                #data = {"operationName":"PrimediceRoll","variables":{"currency":COIN,"amount":bet,"target":chance,"condition":cont},"query":"mutation PrimediceRoll($amount: Float!, $target: Float!, $condition: CasinoGamePrimediceConditionEnum!, $currency: CurrencyEnum!) {\n  primediceRoll(amount: $amount, target: $target, condition: $condition, currency: $currency) {\n    ...CasinoBetFragment\n    state {\n      ...PrimediceStateFragment\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment CasinoBetFragment on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n    __typename\n  }\n  __typename\n}\n\nfragment PrimediceStateFragment on CasinoGamePrimedice {\n  result\n  target\n  condition\n  __typename\n}\n"}
+                #req = requests.post(url,json=data,headers=self.headers,timeout=7)
+                req = self.ses.post(self.urlApi,json=data, headers=self.headers,timeout=7)
+            #    open("limbo.txt","a+").write(f"{json.dumps(req.json())}\n")
+                if "errors" in req.text:
+                    print(f"{merah} => {req.json()['errors'][0]['message'].upper()}")
+                    print(f"{ij} => Skipping Next Account !!!")
+                    return
+                if myBal[COIN] <= 0:
+                    print(f"** skipped!")
+                    return
+                else:
+                    try:
+                        peler = req.json()["data"]["minesBet"]["payoutMultiplier"]
+                        payout = req.json()["data"]["minesBet"]["payout"]
+                        amount = req.json()["data"]["minesBet"]["amount"]
+                        #resul = req.json()["data"]["limboBet"]["state"]["result"]
+                        #target = req.json()["data"]["limboBet"]["state"]["multiplierTarget"]
+                        akhir = datetime.now().replace(microsecond=0)
+                        waktu = akhir - awal
+                        totalRoll += 1
+                        wager += amount
+
+                        if payout > 0:
+                            chance = random.uniform(Min1,Max1)
+                            totalLose = 0
+                            warna = Fore.LIGHTYELLOW_EX
+                            totalWin += 1
+                            profit += (payout - amount)
+                            if totalWin > winStrike:
+                                winStrike += 1
+                            if ifwin != 0:
+                                ## implementasi `reset if profit`
+                                if profit >= (lastProfit + resetIfProfit):
+                                    bet = basebet
+                                    lastProfit = profit
+                                else:
+                                    ## kalok `reset if profit` belon terpenuhi, kalikan tarohan dg `if win`
+                                    bet *= ifwin
+                            else:
+                                bet = basebet
+                            print(f"{ij}[+]{res} {war}{profit:.8f} {ij}[÷]{res} {war}{amount:.8f} {ij}W:{war} {wager:.8f} x{peler}")
+                        else:
+                            chance = random.uniform(Min1,Max1)
+                            totalWin = 0
+                            warna = Fore.LIGHTYELLOW_EX
+                            totalLose += 1
+                            profit -= amount
+                            if totalLose > loseStrike:
+                                loseStrike += 1
+                            if iflose != 0:
+                                bet *= iflose
+                            else:
+                                bet = basebet
+                            print(f"{ij}[-]{res} {war}{profit:.8f} {ij}[÷]{res} {war}{amount:.8f} {ij}W:{war} {wager:.8f}{wager:.8f} x{peler}")
+                        print(f" {putih} {self.get_timet()} {rd}L ({totalLose}/{loseStrike}) {ij}W ({totalWin}/{winStrike}) {kn}[{waktu}]",flush=True,end='\r')
+                        if profit >= targetprofit:
+                            print()
+                            print(f"{ij} • TARGET PROFIT REACTED !")
+                            print(f"{ij} • Profit  : {targetprofit:.8f} {COIN.lower()} Terpenuhi !")
+                            print(f"{ij} • Balance : {myBal[COIN]:.8f} {COIN.lower()}")
+                            print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")
+                            print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
+                            return
+                        if totalRoll >= troll:
+                            print()
+                            print(f"{ij} • TARGET ROLL REACTED !")
+                            print(f"{ij} • Rools   : {troll} Terpenuhi !")
+                            print(f"{ij} • Balance : {myBal[COIN]:.8f} {COIN.lower()}")
+                            print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")
+                            print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
+                            return 
+                        if myBal[COIN] >= targetbalance:
+                            print()
+                            print(f"{ij} • TARGET BALANCE REACTED !")
+                            print(f"{ij} • Target  : {targetbalance:.8f} {COIN.lower()} Terpenuhi !")
+                            print(f"{ij} • Balance : {myBal[COIN]:.8f} {COIN.lower()}")
+                            print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")
+                            print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
+                            return
+                        if profit <= -targetlose:
+                            print()
+                            print(f"{ij} • TARGET LOSE REACTED !")
+                            print(f"{ij} • Target  : -{targetlose:.8f} LOSE Terpenuhi !")
+                            print(f"{ij} • Balance : {myBal[COIN]:.8f} {COIN.lower()}")
+                            print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")
+                            print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
+                            return
+
+                    except json.decoder.JSONDecodeError:
+                        print(req.text)
+                        exit()
+
+    def limbobet(self,token):
+        _myACC = self._my_account(token)
+        if not _myACC:
+            return
+        else:
+            myName, myEmail, myBal = _myACC
+        print(f"{putih}{myName.upper()} | {myBal[COIN]:.8f} {COIN.upper()}\n")
+        wager = 0
+        totalRoll = 0
+        profit = 0
+        loseStrike = 0
+        totalLose = 0
+        winStrike = 0
+        totalWin = 0
+        lose = 0
+        self.ses.headers["x-access-token"] = token
+        awal = datetime.now().replace(microsecond=0)
+        bet = basebet
+        chance = random.uniform(Min1,Max1)
+        lastProfit = profit
+        retries = 0
+        newsed = 1
+        data_kurs = {  "query": "query CurrencyConversionRate {\n  info {\n    currencies {\n      name\n      eur: value(fiatCurrency: eur)\n      jpy: value(fiatCurrency: jpy)\n      usd: value(fiatCurrency: usd)\n      brl: value(fiatCurrency: brl)\n      cad: value(fiatCurrency: cad)\n      cny: value(fiatCurrency: cny)\n      idr: value(fiatCurrency: idr)\n      inr: value(fiatCurrency: inr)\n      krw: value(fiatCurrency: krw)\n      php: value(fiatCurrency: php)\n      rub: value(fiatCurrency: rub)\n      mxn: value(fiatCurrency: mxn)\n      dkk: value(fiatCurrency: dkk)\n    }\n  }\n}\n","variables": {}}
+        req_kurs = self.ses.post(self.stake_api, json=data_kurs)
+        kurs_crypto_usd = self.kurscrypto(req_kurs.json()['data']['info']['currencies'])
+
+        while(True):
+            lose1 = 0
+            retries += 1
+            #reqbal = self.ses.post(self.urlApi,json={"query":"query UserBalances {\n  user {\n    id\n    balances {\n      available {\n        amount\n        currency\n        __typename\n      }\n      vault {\n        amount\n        currency\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n","operationName":"UserBalances"},headers=self.headers,timeout=60000).json()
+            #balance = float(self.formatAmo(self.parsBalance(reqbal["data"]["user"]["balances"])))
+            #data_kurs = {  "query": "query CurrencyConversionRate {\n  info {\n    currencies {\n      name\n      eur: value(fiatCurrency: eur)\n      jpy: value(fiatCurrency: jpy)\n      usd: value(fiatCurrency: usd)\n      brl: value(fiatCurrency: brl)\n      cad: value(fiatCurrency: cad)\n      cny: value(fiatCurrency: cny)\n      idr: value(fiatCurrency: idr)\n      inr: value(fiatCurrency: inr)\n      krw: value(fiatCurrency: krw)\n      php: value(fiatCurrency: php)\n      rub: value(fiatCurrency: rub)\n      mxn: value(fiatCurrency: mxn)\n      dkk: value(fiatCurrency: dkk)\n    }\n  }\n}\n","variables": {}}
+            #req_kurs = self.ses.post(self.stake_api, json=data_kurs)
+            #kurs_crypto_usd = self.kurscrypto(req_kurs.json()['data']['info']['currencies'])
+            #data ={"query":"mutation PlinkoBet($amount: Float!, $currency: CurrencyEnum!, $risk: CasinoGamePlinkoRiskEnum!, $rows: Int!, $identifier: String!) {\n  plinkoBet(\n    amount: $amount\n    currency: $currency\n    risk: $risk\n    rows: $rows\n    identifier: $identifier\n  ) {\n    ...CasinoBet\n    state {\n      ...CasinoGamePlinko\n    }\n  }\n}\n\nfragment CasinoBet on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n  }\n}\n\nfragment CasinoGamePlinko on CasinoGamePlinko {\n  risk\n  rows\n  point\n  path\n}\n","variables":{"currency":COIN,"amount":bet,"rows":pin,"risk":"low","identifier":"PGt_Wd9sfOJG0P6Txcl_u"}}
+            data= {"operationName":"LimboBet","query":"mutation LimboBet($amount: Float!, $multiplierTarget: Float!, $currency: CurrencyEnum!, $identifier: String!) {\n  limboBet(\n    amount: $amount\n    currency: $currency\n    multiplierTarget: $multiplierTarget\n    identifier: $identifier\n  ) {\n    ...CasinoBet\n    state {\n      ...CasinoGameLimbo\n    }\n  }\n}\n\nfragment CasinoBet on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n  }\n}\n\nfragment CasinoGameLimbo on CasinoGameLimbo {\n  result\n  multiplierTarget\n}\n","variables":{"multiplierTarget":chance,"identifier":"PGt_Wd9sfOJG0P6Txcl_u","amount":bet,"currency":COIN}}
+            #data = {"operationName":"PrimediceRoll","variables":{"currency":COIN,"amount":bet,"target":chance,"condition":cont},"query":"mutation PrimediceRoll($amount: Float!, $target: Float!, $condition: CasinoGamePrimediceConditionEnum!, $currency: CurrencyEnum!) {\n  primediceRoll(amount: $amount, target: $target, condition: $condition, currency: $currency) {\n    ...CasinoBetFragment\n    state {\n      ...PrimediceStateFragment\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment CasinoBetFragment on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n    __typename\n  }\n  __typename\n}\n\nfragment PrimediceStateFragment on CasinoGamePrimedice {\n  result\n  target\n  condition\n  __typename\n}\n"}
+            #req = requests.post(url,json=data,headers=self.headers,timeout=7)
+            req = self.ses.post(self.urlApi,json=data, timeout=7)
+            #open("limbo.txt","a+").write(f"{json.dumps(req.json())}\n")
+            if "errors" in req.text:
+                print(f"{merah} => {req.json()['errors'][0]['message'].upper()}")
+                print(f"{ij} => Skipping Next Account !!!")
+                return
+            if myBal[COIN] <= 36:
+                print(f"** skipped!")
+                return
+            else:
+                try:
+                    #data = {"query":"mutation RotateSeedPair($seed: String!) {\n  rotateSeedPair(seed: $seed) {\n    clientSeed {\n      user {\n        id\n        activeClientSeed {\n          id\n          seed\n          __typename\n        }\n        activeServerSeed {\n          id\n          nonce\n          seedHash\n          nextSeedHash\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n","operationName":"RotateSeedPair","variables":{"seed":newsed}}
+                    #bete = self.ses.post(self.urlApi,json=data,timeout=7)
+                    #print(bete)
+                    #bett = json.loads(req.text)
+                    #for betid in bett.values():
+                    #betid = bete["data"]["bet"]["iid"]
+                    #betid = betid.replace("house:"," casino:#")
+                    #seed = bete.json()["rotateSeedPair"]["clientSeed"]["user"]["activeClientSeed"]["seed"]
+                    peler = req.json()["data"]["limboBet"]["payoutMultiplier"]
+                    payout = req.json()["data"]["limboBet"]["payout"]
+                    amount = req.json()["data"]["limboBet"]["amount"]
+                    betid = req.json()["data"]["limboBet"]["id"]
+                    resul = req.json()["data"]["limboBet"]["state"]["result"]
+                    target = req.json()["data"]["limboBet"]["state"]["multiplierTarget"]
+                    akhir = datetime.now().replace(microsecond=0)
+                    waktu = akhir - awal
+                    totalRoll += 1
+                    wager += amount
+
+                    if payout > 0:
+                        chance = random.uniform(Min1,Max1)
+                        totalLose = 0
+                        warna = Fore.LIGHTYELLOW_EX
+                        totalWin += 1
+                        profit += (payout - amount)
+                        if totalWin > winStrike:
+                            winStrike += 1
+                        if ifwin != 0:
+                            ## implementasi `reset if profit`
+                            if profit >= (lastProfit + resetIfProfit):
+                                bet = basebet
+                                lastProfit = profit
+                            else:
+                                ## kalok `reset if profit` belon terpenuhi, kalikan tarohan dg `if win`
+                                bet *= ifwin
+                        else:
+                            bet = basebet
+                        print(f" {bet:.8f} {profcolor}|+|{rs} {profit:.8f} {wager:.8f} ({target:>4}) x {resul}") #(${round(balance*kurs_crypto_usd,2)})")
+                    else:
+                        chance = random.uniform(Min1,Max1)
+                        totalWin = 0
+                        warna = Fore.LIGHTYELLOW_EX
+                        totalLose += 1
+                        profit -= amount
+                        if totalLose > loseStrike:
+                            loseStrike += 1
+                        if iflose != 0:
+                            bet *= iflose
+                        else:
+                            bet = basebet
+                        print(f" {bet:.8f} {losecolor}|x|{rs} {profit:.8f} {wager:.8f} ({target:>4}) x {resul}") # (${round(balance*kurs_crypto_usd,2)})")
+                    print(f"  {ab}{COIN.upper()} (${round(wager*kurs_crypto_usd,2)}) • {waktu} {ab}({merah}{totalLose}{ab}/{ij}{totalWin}{ab}) {ab}({merah}{loseStrike}{ab}/{ij}{winStrike}{ab}) Roll: {totalRoll} ",flush=True,end='\r')
+                    if profit >= targetprofit:
+                        print()
+                        print(f"{ij} • TARGET PROFIT REACTED !")
+                        print(f"{ij} • Profit  : {targetprofit:.8f} {COIN.lower()} Terpenuhi !")
+                        print(f"{ij} • Balance : {myBal[COIN]:.8f} {COIN.lower()} /","$",round(myBal[COIN]*kurs_crypto_usd,2))
+                        print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")
+                        print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
+                        return
+                    if totalRoll >= troll:
+                        print()
+                        print(f"{ij} • TARGET ROLL REACTED !")
+                        print(f"{ij} • Rools   : {troll} Terpenuhi !")
+                        print(f"{ij} • Balance : {myBal[COIN]:.8f} {COIN.lower()} /","$",round(myBal[COIN]*kurs_crypto_usd,2))
+                        print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")
+                        print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
+                        return 
+                    if myBal[COIN] >= targetbalance:
+                        print()                  
+                        print(f"{ij} • TARGET BALANCE REACTED !")
+                        print(f"{ij} • Target  : {targetbalance:.8f} {COIN.lower()} Terpenuhi !")
+                        print(f"{ij} • Balance : {myBal[COIN]:.8f} {COIN.lower()} /","$",round(myBal[COIN]*kurs_crypto_usd,2))
+                        print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")()
+                        print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
+                        return
+                    if profit <= -targetlose:
+                        print()
+                        print(f"{ij} • TARGET LOSE REACTED !")
+                        print(f"{ij} • Target  : -{targetlose:.8f} LOSE Terpenuhi !")
+                        print(f"{ij} • Balance : {myBal[COIN]:.8f} {COIN.lower()}")
+                        print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")
+                        print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
+                        return
+
+                except json.decoder.JSONDecodeError:
+                    print(req.text)
+                    exit()
+
+    def cek_deposit(self, token):
+        _myACC = self._my_account(token)
+        if not _myACC:
+            return
+        else:
+            myName, myEmail, myBal = _myACC
+        data = {"query":"query DepositList($offset: Int = 0, $limit: Int = 10) {\n  user {\n    id\n    depositList(offset: $offset, limit: $limit) {\n      ...DepositFragment\n    }\n  }\n}\n\nfragment DepositFragment on WalletDeposit {\n  id\n  createdAt\n  amount\n  currency\n  status\n  chain\n  hash\n  tokensReceived {\n    currency\n    amount\n  }\n}\n","variables":{"limit":1,"offset":0}}
+        self.headers["Content-Length"] = str(len(data))
+        self.headers["x-access-token"] = token
+        self.ses.headers.update(self.headers)
+        req = self.ses.post(self.urlApi,json=data)
+        open("result.json","w").write(req.text)
+        if "errors" in req.text:
+            print(f"{merah}{req.json()['errors'][0]['message'].upper()}")
+            return
+        else:
+            try:
+                _amount = req.json()["data"]["user"]["depositList"][0]["amount"]
+                _date = req.json()["data"]["user"]["depositList"][0]["createdAt"]
+                _coin = req.json()["data"]["user"]["depositList"][0]["currency"]
+                _chain = req.json()["data"]["user"]["depositList"][0]["chain"]
+                print(f"{war}[-] {biru}{self.get_timet()} {ij}name     : {putih}{myName}")
+                print(f"{war}[-] {biru}{self.get_timet()} {ij}amount   : {putih}{_amount:.7f}")
+                print(f"{war}[-] {biru}{self.get_timet()} {ij}date     : {putih}{_date}")
+                print(f"{war}[-] {biru}{self.get_timet()} {ij}coin     : {putih}{_coin}")
+                print(f"{war}[-] {biru}{self.get_timet()} {ij}network  : {putih}{_chain}")
+
+                return
+            except json.decoder.JSONDecodeError as req:
+                print(req.text)
+                exit()
+
+
+    def baccarat(self,token):
+        _myACC = self._my_account(token)
+        if not _myACC:
+            return
+        else:
+            myName, myEmail, myBal = _myACC
+        print(f"{putih}{myName.upper()} | {myBal[COIN]:.8f} {COIN.upper()}\n")
+        profit = 0
+        profit2 = 0
+        win = 0
+        lose = 0
+        wager = 0
+        lb = p+b
+        lba = lb
+        roll = 0
+        ls = 0
+        lbp = p
+        lbb = b
+        po = 1
+        data ={"query":"mutation BaccaratBet($tie: Float, $player: Float, $banker: Float, $currency: CurrencyEnum!, $identifier: String!) {\n  baccaratBet(\n    tie: $tie\n    player: $player\n    banker: $banker\n    currency: $currency\n    identifier: $identifier\n  ) {\n    ...CasinoBet\n    state {\n      ...CasinoGameBaccarat\n    }\n  }\n}\n\nfragment CasinoBet on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n  }\n}\n\nfragment CasinoGameBaccarat on CasinoGameBaccarat {\n  ... on CasinoGameBaccarat {\n    playerCards {\n      suit\n      rank\n    }\n    bankerCards {\n      suit\n      rank\n    }\n    tie\n    player\n    banker\n    result\n  }\n}\n","variables":{"currency":COIN,"identifier":"B89nuYazLjslrTi7nuWlp","tie":0,"player":p,"banker":b}}        
+        #self.headers["Content-Length"] = str(len(data))
+        self.ses.headers["x-access-token"] = token
+        #self.ses.headers.update(self.headers)
+        while(True):
+                roll +=1
+                #data ={"query":"mutation KenoBet($amount: Float!, $currency: CurrencyEnum!, $numbers: [Int!]!, $identifier: String!, $risk: CasinoGameKenoRiskEnum) {\n  kenoBet(\n    amount: $amount\n    currency: $currency\n    numbers: $numbers\n    risk: $risk\n    identifier: $identifier\n  ) {\n    ...CasinoBet\n    state {\n      ...CasinoGameKeno\n    }\n  }\n}\n\nfragment CasinoBet on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n  }\n}\n\nfragment CasinoGameKeno on CasinoGameKeno {\n  drawnNumbers\n  selectedNumbers\n  risk\n}\n","variables":{"numbers":choice,"risk":"low","amount":bet,"currency":COIN,"identifier":"gL3AKf5OWo9wqTQ8QcTtD"}}
+                if roll >= 100:
+                    if profit > 0:
+                        roll = 0
+                    else:
+                        bet = (profit*(-1))/100
+                        profitplus = (profit*(-1))
+                        target = 110
+                        if roll <= 149:
+                            target = random.randrange(25,20250)/10
+                            if profitplus < 0.51:
+                                bet = profitplus/10
+                            else:
+                                bet = (profit*(-1))/100
+                        elif roll >= 150:
+                            if profitplus < 0.01:
+                                bet = profitplus
+                                target = random.randrange(25,20250)/10
+                            elif profitplus > 2:
+                                target = random.randrange(2500,20250)/10
+                                if target < 500:
+                                    bet = profitplus/500
+                                elif target > 1000:
+                                    bet = profitplus/1000
+                                else:         
+                                    bet = profitplus/750
+                            else:
+                                target = random.randrange(11,1500)/10
+                                if target < 100:
+                                    if target > 50:
+                                        bet = profitplus/50
+                                    else:
+                                        bet = profitplus/10
+                                else:
+                                    bet = profitplus/100
+                            #bet = (profit*(-1))/100
+                        data ={"query":"mutation LimboBet($amount: Float!, $multiplierTarget: Float!, $currency: CurrencyEnum!, $identifier: String!) {\n  limboBet(\n    amount: $amount\n    currency: $currency\n    multiplierTarget: $multiplierTarget\n    identifier: $identifier\n  ) {\n    ...CasinoBet\n    state {\n      ...CasinoGameLimbo\n    }\n  }\n}\n\nfragment CasinoBet on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n  }\n}\n\nfragment CasinoGameLimbo on CasinoGameLimbo {\n  result\n  multiplierTarget\n}\n","variables":{"multiplierTarget":target,"identifier":"fXBb2ePT_L1jGvgZK_tty","amount":bet,"currency":COIN}}
+
+                        #data ={"query":"mutation KenoBet($amount: Float!, $currency: CurrencyEnum!, $numbers: [Int!]!, $identifier: String!, $risk: CasinoGameKenoRiskEnum) {\n  kenoBet(\n    amount: $amount\n    currency: $currency\n    numbers: $numbers\n    risk: $risk\n    identifier: $identifier\n  ) {\n    ...CasinoBet\n    state {\n      ...CasinoGameKeno\n    }\n  }\n}\n\nfragment CasinoBet on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n  }\n}\n\nfragment CasinoGameKeno on CasinoGameKeno {\n  drawnNumbers\n  selectedNumbers\n  risk\n}\n","variables":{"numbers":choice,"risk":"low","amount":bet,"currency":COIN,"identifier":"gL3AKf5OWo9wqTQ8QcTtD"}}
+                        try:
+                            req = self.ses.post(self.urlApi,json=data,timeout=7)
+                        except ReadTimeoutError:
+                            self.reload(self,token)                  
+                        open("result.json","w").write(req.text)
+                        #GetPO
+                        bett = json.loads(req.text)
+                        try:
+                            for item in bett.values():
+                                py = item["limboBet"]["payoutMultiplier"]
+                                amo = item["limboBet"]["amount"]
+                                result = item["limboBet"]["state"]["result"]
+                                wager += amo
+                                #lastR = item["plinkoBet"]["state"]["drawnNumbers"]
+                                if py == 0:
+                                    ls += 1
+                                    po = 0
+                                    profit -=amo
+                                    print(" Target:",item["limboBet"]["state"]["multiplierTarget"],"  -",format(amo, '.8f'),"profit :",format(profit,'.8f'),"wager:",format(wager, ".8f")," result:",format(result,".2f"))
+                                else:
+                                    po = py
+                                    ls = 0
+                                    l1 = 0
+                                    amo = (amo*po)-amo 
+                                    profit += amo
+                                    if profit < 0:
+                                        pass
+                                    else:
+                                        roll = 0
+                                    print(" Target:",item["limboBet"]["state"]["multiplierTarget"],"+",format(amo, '.8f'),"profit :",format(profit,'.8f'),"wager:",format(wager, ".8f")," result:",format(result,".2f"))
+                                    pass
+                                
+                        except:
+                            #print(req.text)
+                            pass
+                else:    
+                    data ={"query":"mutation BaccaratBet($tie: Float, $player: Float, $banker: Float, $currency: CurrencyEnum!, $identifier: String!) {\n  baccaratBet(\n    tie: $tie\n    player: $player\n    banker: $banker\n    currency: $currency\n    identifier: $identifier\n  ) {\n    ...CasinoBet\n    state {\n      ...CasinoGameBaccarat\n    }\n  }\n}\n\nfragment CasinoBet on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n  }\n}\n\nfragment CasinoGameBaccarat on CasinoGameBaccarat {\n  ... on CasinoGameBaccarat {\n    playerCards {\n      suit\n      rank\n    }\n    bankerCards {\n      suit\n      rank\n    }\n    tie\n    player\n    banker\n    result\n  }\n}\n","variables":{"currency":COIN,"identifier":"B89nuYazLjslrTi7nuWlp","tie":0,"player":p,"banker":b}}        
+                    try:
+                        req = self.ses.post(self.urlApi,json=data,timeout=7)
+                    except ReadTimeoutError:
+                        
+                        self.reload(self,token)                  
+                    open("result.json","w").write(req.text)
+                    #GetPO
+                    try:
+                        bett = json.loads(req.text)
+                    except:
+                        pass
+                    #print(data)
+                    try:
+                        for item in bett.values():
+                            py = item["baccaratBet"]["payoutMultiplier"]
+                            #betid = item["baccaratBet"]["id"]
+                            amo = item["baccaratBet"]["amount"]
+                            player = item["baccaratBet"]["state"]["player"]
+                            banker = item["baccaratBet"]["state"]["banker"]
+                            result = item["baccaratBet"]["state"]["result"]
+                            #print(result,amo,py)
+                            #lastR = item["plinkoBet"]["state"]["drawnNumbers"]
+                            
+                            wager += amo
+                            if py < 0.99:
+                                ls += 1
+                                lose += 1
+                                po = 0
+                                amo = amo-(amo*py)
+                                profit -=amo
+                                selisih = profit2-profit
+                                print(" PO", format(py, '.2f'),"-",format(amo, '.8f'),"P :",format(profit,'.8f'),"W:",format(wager,'.8f'),COIN)
+                            else:
+                                po = py
+                                win += 1
+                                ls = 0
+                                l1 = 0
+                                amo = (amo*po)-amo
+                                profit += amo 
+                                print(" PO",format(py, '.2f'),"+",format(amo, '.8f'),"P :",format(profit,'.8f'),"W:",format(wager,'.8f'),COIN)
+                                pass
+                    except:
+                        #print(req.text)
+                        #print(data)
+                        input()
+                        pass
+
+    def wekly(self,token):
+        TOKEN = "5702690829:AAFc9S9wAL7tCAGmOG4zLXmgmTHCVFOkLwc"
+        chat_id = "-1001896950021"
+        _myACC = self._my_account(token)
+        if not _myACC:
+            return
+        else:
+            myName, myEmail, myBal = _myACC
+        print(f"{war}[-] {biru}{self.get_timet()} {ij}{myName} {putih}{myBal[COIN]:.8f} {COIN.upper()}")
+        captcha = self._captcha()
+        print(f'{war}[-] {biru}{self.get_timet()} {ij}success {putih}bypass captcha                     ')
+        data = {"query":"mutation ClaimBonusCode($code: String!, $currency: CurrencyEnum!, $captcha: String!) {\n  claimBonusCode(code: $code, currency: $currency, captcha: $captcha) {\n    bonusCode {\n      id\n      code\n      __typename\n    }\n    amount\n    currency\n    user {\n      id\n      balances {\n        available {\n          amount\n          currency\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    redeemed\n    __typename\n  }\n}\n","operationName":"ClaimBonusCode","variables":{"code":code,"currency":COIN.lower(),"captcha":captcha}}
+        #self.headers["Content-Length"] = str(len(data))
+        self.ses.headers["x-access-token"] = token
+        #self.ses.headers.update(self.headers)
+        req = self.ses.post(self.urlApi,json=data)
+        open("wekly.txt","a+").write(f"{json.dumps(req.json())}\n")
+        data_kurs = {  "query": "query CurrencyConversionRate {\n  info {\n    currencies {\n      name\n      eur: value(fiatCurrency: eur)\n      jpy: value(fiatCurrency: jpy)\n      usd: value(fiatCurrency: usd)\n      brl: value(fiatCurrency: brl)\n      cad: value(fiatCurrency: cad)\n      cny: value(fiatCurrency: cny)\n      idr: value(fiatCurrency: idr)\n      inr: value(fiatCurrency: inr)\n      krw: value(fiatCurrency: krw)\n      php: value(fiatCurrency: php)\n      rub: value(fiatCurrency: rub)\n      mxn: value(fiatCurrency: mxn)\n      dkk: value(fiatCurrency: dkk)\n    }\n  }\n}\n","variables": {}}
+        req_kurs = self.ses.post(self.stake_api, json=data_kurs)
+        kurs_crypto_usd = self.kurscrypto(req_kurs.json()['data']['info']['currencies'])
+        if "errors" in req.text:
+            print(f'{war}[-] {biru}{self.get_timet()} {merah}{req.json()["errors"][0]["message"]}')
+            #response = requests.get("https://api.telegram.org/bot" + TOKEN + "/sendMessage" + "?chat_id=" + chat_id + "&text=" + f"Username : {myName}\nBalance : {myBal[COIN]:.8f} {COIN.upper()}\nError : {req}")
+            return
+        else:
+            try:
+                index_coin = self.get_crypto_index(COIN)
+                reload_amount = req.json()["data"]["claimBonusCode"]["amount"]
+                print(f"{war}[-] {biru}{self.get_timet()} {ij}reload: {putih}{self.formater(reload_amount)} {COIN.upper()}")
+                print(f"{war}[-] {biru}{self.get_timet()} {ij}Balance: {putih}{myBal[COIN] + reload_amount:.8f} {COIN.upper()} /"," / $",round(myBal[COIN]*kurs_crypto_usd,2))
+                response = requests.get("https://api.telegram.org/bot" + TOKEN + "/sendMessage" + "?chat_id=" + chat_id + "&text=" + f"Username : {myName}\nBalance {myBal[COIN]:.8f} {COIN.upper()}\nSuccess claim {reload_amount:.8f} {COIN.upper()}\nLast Balance : {myBal[COIN] + reload_amount:.8f} {COIN.upper()}")
+
+                return
+            except json.decoder.JSONDecodeError:
+                print(req.text)
+                exit()
+
+    def promo(self, token):
+        _myACC = self._my_account(token)
+        if not _myACC:
+            return
+        else:
+            myName, myEmail, myBal = _myACC
+        print(f"{war}[-] {biru}{self.get_timet()} {ij}{myName} {putih}{myBal[COIN]:.8f} {COIN.upper()}")
+        data = {
+            "query":"mutation ClaimPromo($code: String!, $currency: CurrencyEnum!) {\n  claimPromo(code: $code, currency: $currency) {\n    id\n    promo {\n      type\n      __typename\n    }\n    data {\n      ... on PromoBonusClaimData {\n        amount\n        currency\n        __typename\n      }\n      ... on PromoReloadClaimData {\n        amount\n        currency\n        claimIntervalMins\n        expireAt\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n",
+            "operationName": "ClaimPromo",
+            "variables":{
+                "code": code,
+                "currency": COIN
+            }
+        }
+        self.ses.headers["x-access-token"] = token
+        #self.ses.headers.update(self.headers)
+        req = self.ses.post(self.urlApi,json=data)
+        open("promo.txt","a+").write(f"{json.dumps(req.json())}\n")
+        #print(json.dumps(req.json(),indent=4))
+        if "errors" in req.text:
+            print(f'{war}[-] {biru}{self.get_timet()} {merah}{req.json()["errors"][0]["message"]}')
+            print(f'{war}[-] {biru}{self.get_timet()} {merah}code {code}')
+            return
+        else:
+            try:
+                index_coin = self.get_crypto_index(COIN)
+                print(json.dumps(req.json(),indent=4))
+
+                return
+            except json.decoder.JSONDecodeError:
+                print(req.text)
+                exit()
+
+    def _scarab_spin(self,token):
+        _myACC = self._my_account(token)
+        if not _myACC:
+            return
+        else:
+            myName, myEmail, myBal = _myACC
+        print(f"{putih}{myName.upper()} | {myBal[COIN]:.8f} {COIN.upper()}\n")
+        wager = 0
+        totalRoll = 0
+        profit = 0
+        loseStrike = 0
+        totalLose = 0
+        winStrike = 0
+        totalWin = 0
+        lose = 0
+        lastpayout = 0
+        lastresult = 0
+        highresult = 0
+        targetlimbo = 0
+        self.ses.headers["x-access-token"] = token
+        awal = datetime.now().replace(microsecond=0)
+        bet = basebet
+        lastProfit = profit
+        reqbal = self.ses.post(self.urlApi,json={"query":"query UserBalances {\n  user {\n    id\n    balances {\n      available {\n        amount\n        currency\n        __typename\n      }\n      vault {\n        amount\n        currency\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n","operationName":"UserBalances"},headers=self.headers,timeout=60000).json()
+        balance = float(self.formatAmo(self.parsBalance(reqbal["data"]["user"]["balances"])))
+        retries = 0
+
+        while True:
+            lose1 = 0
+            retries += 1
+            data_kurs = {  "query": "query CurrencyConversionRate {\n  info {\n    currencies {\n      name\n      eur: value(fiatCurrency: eur)\n      jpy: value(fiatCurrency: jpy)\n      usd: value(fiatCurrency: usd)\n      brl: value(fiatCurrency: brl)\n      cad: value(fiatCurrency: cad)\n      cny: value(fiatCurrency: cny)\n      idr: value(fiatCurrency: idr)\n      inr: value(fiatCurrency: inr)\n      krw: value(fiatCurrency: krw)\n      php: value(fiatCurrency: php)\n      rub: value(fiatCurrency: rub)\n      mxn: value(fiatCurrency: mxn)\n      dkk: value(fiatCurrency: dkk)\n    }\n  }\n}\n","variables": {}}
+            req_kurs = self.ses.post(self.stake_api, json=data_kurs)
+            kurs_crypto_usd = self.kurscrypto(req_kurs.json()['data']['info']['currencies'])
+            reqbal = self.ses.post(self.urlApi,json={"query":"query UserBalances {\n  user {\n    id\n    balances {\n      available {\n        amount\n        currency\n        __typename\n      }\n      vault {\n        amount\n        currency\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n","operationName":"UserBalances"},headers=self.headers,timeout=60000).json()
+            balance = float(self.formatAmo(self.parsBalance(reqbal["data"]["user"]["balances"])))
+            #data ={"query":"mutation PlinkoBet($amount: Float!, $currency: CurrencyEnum!, $risk: CasinoGamePlinkoRiskEnum!, $rows: Int!, $identifier: String!) {\n  plinkoBet(\n    amount: $amount\n    currency: $currency\n    risk: $risk\n    rows: $rows\n    identifier: $identifier\n  ) {\n    ...CasinoBet\n    state {\n      ...CasinoGamePlinko\n    }\n  }\n}\n\nfragment CasinoBet on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n  }\n}\n\nfragment CasinoGamePlinko on CasinoGamePlinko {\n  risk\n  rows\n  point\n  path\n}\n","variables":{"currency":COIN,"amount":bet,"rows":pin,"risk":"low","identifier":"PGt_Wd9sfOJG0P6Txcl_u"}}
+            data= {"query":"mutation slotsBet($amount: Float!, $lines: Int!, $currency: CurrencyEnum!, $identifier: String!) {\n  slotsBet(\n    amount: $amount\n    currency: $currency\n    lines: $lines\n    identifier: $identifier\n  ) {\n    ...CasinoBet\n    state {\n      ...SlotsStateFragment\n    }\n  }\n}\n\nfragment CasinoBet on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n  }\n}\n\nfragment SlotsStateFragment on CasinoGameSlots {\n  lines\n  rounds {\n    offsets\n    paylines {\n      payline\n      hits\n      multiplier\n      symbol\n    }\n    scatterMultiplier\n    roundMultiplier\n    totalMultiplier\n    bonusRemaining\n    bonusTotal\n  }\n}\n","variables":{"currency":COIN,"amount":bet,"lines":Line,"identifier":"medukzz"}}
+            #data = {"operationName":"PrimediceRoll","variables":{"currency":COIN,"amount":bet,"target":chance,"condition":cont},"query":"mutation PrimediceRoll($amount: Float!, $target: Float!, $condition: CasinoGamePrimediceConditionEnum!, $currency: CurrencyEnum!) {\n  primediceRoll(amount: $amount, target: $target, condition: $condition, currency: $currency) {\n    ...CasinoBetFragment\n    state {\n      ...PrimediceStateFragment\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment CasinoBetFragment on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n    __typename\n  }\n  __typename\n}\n\nfragment PrimediceStateFragment on CasinoGamePrimedice {\n  result\n  target\n  condition\n  __typename\n}\n"}
+            #req = requests.post(url,json=data,headers=self.headers,timeout=7)
+            req = self.ses.post(self.urlApi,json=data, headers=self.headers,timeout=7)
+            open("mines.txt","a+").write(f"{json.dumps(req.json())}\n")
+            if "errors" in req.text:
+                print(f"{merah} => {req.json()['errors'][0]['message'].upper()}")
+                print(f"{ij} => Skipping Next Account !!!")
+                return
+            if myBal[COIN] <= 0:
+                print(f"** skipped!")
+                return
+            else:
+                try:
+                    peler = req.json()["data"]["slotsBet"]["payoutMultiplier"]
+                    payout = req.json()["data"]["slotsBet"]["payout"]
+                    amount = req.json()["data"]["slotsBet"]["amount"]
+                    resul = req.json()["data"]["slotsBet"]["state"]["lines"]
+                    #target = req.json()["data"]["slotsBet"]["state"]["mines"]
+                    akhir = datetime.now().replace(microsecond=0)
+                    waktu = akhir - awal
+                    totalRoll += 1
+                    wager += amount
+                    
+                    if lastpayout <= targetlimbo:
+                            lastpayout=targetlimbo
+                            lastresult=payout
+
+                    if payout > 0:
+                        totalLose = 0
+                        warna = Fore.LIGHTYELLOW_EX
+                        totalWin += 1
+                        profit += (payout - amount)
+                        if totalWin > winStrike:
+                            winStrike += 1
+                        if ifwin != 0:
+                            ## implementasi `reset if profit`
+                            if profit >= (lastProfit + resetIfProfit):
+                                bet = basebet
+                                lastProfit = profit
+                            else:
+                                ## kalok `reset if profit` belon terpenuhi, kalikan tarohan dg `if win`
+                                bet *= ifwin
+                        else:
+                            bet = basebet
+                        print(f"{ij}[+]{res} {war}{profit:.8f} {ij}[÷]{res} {war}{amount:.8f} {ij}B:{war} {balance:.8f} ({peler})")
+                    else:
+                        totalWin = 0
+                        warna = Fore.LIGHTYELLOW_EX
+                        totalLose += 1
+                        profit -= amount
+                        if totalLose > loseStrike:
+                            loseStrike += 1
+                        if iflose != 0:
+                            bet *= iflose
+                        else:
+                            bet = basebet
+                        print(f"{ij}[-]{res} {war}{profit:.8f} {ij}[!]{res} {war}{amount:.8f} {ij}B:{war} {balance:.8f} ({peler})")
+                    print(f" {putih} {self.get_timet()} {rd}L ({totalLose}/{loseStrike}) {ij}W ({totalWin}/{winStrike}) {kn}[{waktu}] {round(lastresult,2)}",flush=True,end='\r')
+                    if profit >= targetprofit:
+                        print()
+                        print(f"{ij} • TARGET PROFIT REACTED !")
+                        print(f"{ij} • Profit  : {targetprofit:.8f} {COIN.lower()} Terpenuhi !")
+                        print(f"{ij} • Balance : {balance} {COIN.lower()}")
+                        print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")
+                        print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
+                        return
+                    if totalRoll >= troll:
+                        print()
+                        print(f"{ij} • TARGET ROLL REACTED !")
+                        print(f"{ij} • Rools   : {troll} Terpenuhi !")
+                        print(f"{ij} • Balance : {balance} {COIN.lower()}")
+                        print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")
+                        print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
+                        return 
+                    if balance >= targetbalance:
+                        print()
+                        print(f"{ij} • TARGET BALANCE REACTED !")
+                        print(f"{ij} • Target  : {targetbalance:.8f} {COIN.lower()} Terpenuhi !")
+                        print(f"{ij} • Balance : {balance} {COIN.lower()}")
+                        print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")
+                        print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
+                        return
+                    if profit <= -targetlose:
+                        print()
+                        print(f"{ij} • TARGET LOSE REACTED !")
+                        print(f"{ij} • Target  : -{targetlose:.8f} LOSE Terpenuhi !")
+                        print(f"{ij} • Balance : {myBal[COIN]:.8f} {COIN.lower()}")
+                        print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")
+                        print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
+                        return
+
+                except json.decoder.JSONDecodeError:
+                    print(req.text)
+                    exit()
+
+    def dice(self,token):
+        _myACC = self._my_account(token)
+        if not _myACC:
+            return
+        else:
+            myName, myEmail, myBal = _myACC
+        print(f"{putih}{myName.upper()} | {myBal[COIN]:.8f} {COIN.upper()}\n")
+        wager = 0
+        totalRoll = 0
+        profit = 0
+        loseStrike = 0
+        totalLose = 0
+        winStrike = 0
+        totalWin = 0
+        self.ses.headers["x-access-token"] = token
+        awal = datetime.now().replace(microsecond=0)
+        bet = basebet
+        chance = random.uniform(Min,Max)
+        keg = ["above","below"]
+        rotter = random.choice(keg)
+        lastProfit = profit
+        retries = 0
+        data_kurs = {  "query": "query CurrencyConversionRate {\n  info {\n    currencies {\n      name\n      eur: value(fiatCurrency: eur)\n      jpy: value(fiatCurrency: jpy)\n      usd: value(fiatCurrency: usd)\n      brl: value(fiatCurrency: brl)\n      cad: value(fiatCurrency: cad)\n      cny: value(fiatCurrency: cny)\n      idr: value(fiatCurrency: idr)\n      inr: value(fiatCurrency: inr)\n      krw: value(fiatCurrency: krw)\n      php: value(fiatCurrency: php)\n      rub: value(fiatCurrency: rub)\n      mxn: value(fiatCurrency: mxn)\n      dkk: value(fiatCurrency: dkk)\n    }\n  }\n}\n","variables": {}}
+        req_kurs = self.ses.post(self.stake_api, json=data_kurs)
+        kurs_crypto_usd = self.kurscrypto(req_kurs.json()['data']['info']['currencies'])
+
+        while True:
+            lose1 = 0
+            retries += 1
+            data_kurs = {  "query": "query CurrencyConversionRate {\n  info {\n    currencies {\n      name\n      eur: value(fiatCurrency: eur)\n      jpy: value(fiatCurrency: jpy)\n      usd: value(fiatCurrency: usd)\n      brl: value(fiatCurrency: brl)\n      cad: value(fiatCurrency: cad)\n      cny: value(fiatCurrency: cny)\n      idr: value(fiatCurrency: idr)\n      inr: value(fiatCurrency: inr)\n      krw: value(fiatCurrency: krw)\n      php: value(fiatCurrency: php)\n      rub: value(fiatCurrency: rub)\n      mxn: value(fiatCurrency: mxn)\n      dkk: value(fiatCurrency: dkk)\n    }\n  }\n}\n","variables": {}}
+            req_kurs = self.ses.post(self.stake_api, json=data_kurs)
+            kurs_crypto_usd = self.kurscrypto(req_kurs.json()['data']['info']['currencies'])
+            data = {"query":"mutation DiceRoll($amount: Float!, $target: Float!, $condition: CasinoGameDiceConditionEnum!, $currency: CurrencyEnum!, $identifier: String!) {\n  diceRoll(\n    amount: $amount\n    target: $target\n    condition: $condition\n    currency: $currency\n    identifier: $identifier\n  ) {\n    ...CasinoBet\n    state {\n      ...CasinoGameDice\n    }\n  }\n}\n\nfragment CasinoBet on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n  }\n}\n\nfragment CasinoGameDice on CasinoGameDice {\n  result\n  target\n  condition\n}\n","variables":{"target":chance,"condition":cont,"identifier":"xnxxxnxxxnxxxnxx","amount":bet,"currency":COIN}}
+            #req = requests.post(url,json=data,headers=self.headers,timeout=7)
+            reqbal = self.ses.post(self.urlApi,json={"query":"query UserBalances {\n  user {\n    id\n    balances {\n      available {\n        amount\n        currency\n        __typename\n      }\n      vault {\n        amount\n        currency\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n","operationName":"UserBalances"},headers=self.headers,timeout=60000).json()
+            balance = float(self.formatAmo(self.parsBalance(reqbal["data"]["user"]["balances"])))
+            req = self.ses.post(self.urlApi,json=data, headers=self.headers,timeout=20)
+            #open("dice.txt","a+").write(f"{json.dumps(req.json())}\n")
+            if "errors" in req.text:
+                print(f"{merah} => {req.json()['errors'][0]['message'].upper()}")
+                print(f"{ij} => Skipping Next Account !!!")
+                return
+            if myBal[COIN] <= 0:
+                print(f"** skipped!")
+                return
+            else:
+                try:
+                    peler = req.json()["data"]["diceRoll"]["payoutMultiplier"]
+                    payout = req.json()["data"]["diceRoll"]["payout"]
+                    amount = req.json()["data"]["diceRoll"]["amount"]
+                    resul = req.json()["data"]["diceRoll"]["state"]["result"]
+                    target = req.json()["data"]["diceRoll"]["state"]["target"]
+                    pays = req.json()["data"]["diceRoll"]["state"]["condition"]
+                    pays = pays.replace("below","L")
+                    pays = pays.replace("above","H")
+                    akhir = datetime.now().replace(microsecond=0)
+                    waktu = akhir - awal
+                    totalRoll += 1
+                    wager += amount
+
+                    if payout > 0:
+                        keg = ["above","below"]
+                        rotter = random.choice(keg)
+                        chance = random.uniform(Min,Max)
+                        totalLose = 0
+                        warna = Fore.LIGHTYELLOW_EX
+                        totalWin += 1
+                        profit += (payout - amount)
+                        if totalWin > winStrike:
+                            winStrike += 1
+                        if ifwin != 0:
+                            ## implementasi `reset if profit`
+                            if profit >= (lastProfit + resetIfProfit):
+                                bet = basebet
+                                lastProfit = profit
+                            else:
+                                ## kalok `reset if profit` belon terpenuhi, kalikan tarohan dg `if win`
+                                bet *= ifwin
+                        else:
+                            bet = basebet
+                        print(f"{ij}[{pays}]{res} {war}{profit:.8f} {ij}[B]{res}{war} {amount:.8f} {ij}[B]{res} {war}{balance:.8f} {putih2}{target:.2f}% => {resul:.2f}%")
+                    else:
+                        keg = ["above","below"]
+                        rotter = random.choice(keg)
+                        chance = random.uniform(Min,Max)
+                        totalWin = 0
+                        warna = Fore.LIGHTYELLOW_EX
+                        totalLose += 1
+                        profit -= amount
+                        if totalLose > loseStrike:
+                            loseStrike += 1
+                        if iflose != 0:
+                            bet *= iflose
+                        else:
+                            bet = basebet
+                        print(f"{rd}[{pays}]{res} {war}{profit:.8f} {ij}[B]{res}{war} {amount:.8f} {ij}[B]{res} {war}{balance:.8f} {putih2}{target:.2f}% => {resul:.2f}%")
+                    print(f"  {ab}{COIN.upper()} (${round(wager*kurs_crypto_usd,2)}) • {waktu} {ab}({merah}{totalLose}{ab}/{ij}{totalWin}{ab}) Roll: {totalRoll} ",flush=True,end='\r')
+                    if profit >= targetprofit:
+                        print()
+                        print(f"{ij} • TARGET PROFIT REACTED !")
+                        print(f"{ij} • Profit  : {targetprofit:.8f} {COIN.lower()} Terpenuhi !")
+                        print(f"{ij} • Balance : {myBal[COIN]:.8f} {COIN.lower()} /","$",round(myBal[COIN]*kurs_crypto_usd,2))
+                        print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")
+                        print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
+                        return
+                    if totalRoll >= troll:
+                        print()
+                        print(f"{ij} • TARGET ROLL REACTED !")
+                        print(f"{ij} • Rools   : {troll} Terpenuhi !")
+                        print(f"{ij} • Balance : {myBal[COIN]:.8f} {COIN.lower()} /","$",round(myBal[COIN]*kurs_crypto_usd,2))
+                        print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")
+                        print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
+                        return 
+                    if myBal[COIN] >= targetbalance:
+                        print()                  
+                        print(f"{ij} • TARGET BALANCE REACTED !")
+                        print(f"{ij} • Target  : {targetbalance:.8f} {COIN.lower()} Terpenuhi !")
+                        print(f"{ij} • Balance : {myBal[COIN]:.8f} {COIN.lower()} /","$",round(myBal[COIN]*kurs_crypto_usd,2))
+                        print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")()
+                        print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
+                        return
+                    if profit <= -targetlose:
+                        print()
+                        print(f"{ij} • TARGET LOSE REACTED !")
+                        print(f"{ij} • Target  : -{targetlose:.8f} LOSE Terpenuhi !")
+                        print(f"{ij} • Balance : {myBal[COIN]:.8f} {COIN.lower()}")
+                        print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")
+                        print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
+                        return
+
+                except json.decoder.JSONDecodeError:
+                    print(req.text)
+                    exit()
+
+    def _parsBalance(self,data):
+        for balance in data:
+            if balance["available"]["currency"] == COIN.lower():
+                return balance["vault"]["amount"]
+
+    def _balance_vault(self,token):
+        _myACC = self._my_account(token)
+        if not _myACC:
+            return
+        else:
+            myName, myEmail, myBal = _myACC
+        print(f"{war}[-] {biru}{self.get_timet()} {ij}{myName} {putih}")
+        #print(f"{war}[-] {biru}{self.get_timet()} {ij}{myBal[COIN]:.7f} {COIN.upper()} {putih}")
+        data = {"query":"query UserBalances {\n  user {\n    id\n    balances {\n      available {\n        amount\n        currency\n        __typename\n      }\n      vault {\n        amount\n        currency\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n",
+                        "operationName":"UserBalances"}
+        self.ses.headers["x-access-token"] = token
+        reqbal = self.ses.post(self.urlApi,json={"query":"query UserBalances {\n  user {\n    id\n    balances {\n      available {\n        amount\n        currency\n        __typename\n      }\n      vault {\n        amount\n        currency\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n","operationName":"UserBalances"}).json()
+        balance = float(self.formatAmo(self._parsBalance(reqbal["data"]["user"]["balances"])))
+        open("vault.txt","a+").write(f"{json.dumps(reqbal)}\n")
+        if "errors" in reqbal:
+            print(f"  [!!] Fail: {reqbal['errors'][0]['message']}")
+            return
+        else:
+            oke = reqbal["data"]["user"]["balances"][0]["vault"]["amount"]
+            print(f"{war}[-] {biru}{self.get_timet()} {ij}Vault {oke:.7f} {COIN.upper()} {putih}")
+        
+    def _rakeback(self, token):
+        TOKEN = "5702690829:AAFc9S9wAL7tCAGmOG4zLXmgmTHCVFOkLwc"
+        chat_id = "-1001896950021"
+        _myACC = self._my_account(token)
+        if not _myACC:
+            return
+        else:
+            myName, myEmail, myBal = _myACC
+        print(f"{war}[-] {biru}{self.get_timet()} {ij}{myName} {putih}")
+        print(f"{war}[-] {biru}{self.get_timet()} {ij}{myBal[COIN]:.7f} {COIN.upper()} {putih}")
+        data = {"query":"mutation ClaimRakeback {\n  claimRakeback {\n    id\n    currency\n    amount\n    __typename\n  }\n}\n","operationName":"ClaimRakeback"}
+        self.ses.headers["x-access-token"] = token
+        url = self.ses.post(self.urlApi,json=data)
+        open("dice.txt","a+").write(f"{json.dumps(url.json())}\n")
+        if "errors" in url.json():
+            print(f"{war}[-] {biru}{self.get_timet()} {merah}[!!] Fail: {url.json()['errors'][0]['message']}")
+            return
+        else:
+            try:
+                claim = url.json()["data"]["claimRakeback"][0]["amount"]
+                if claim < 0.000000001:
+                    print(f"** skipped!")
+                    return
+                else:              
+                    print(f"{war}[-] {biru}{self.get_timet()} {ij}success claim {claim:.2f} {COIN.upper()} rakeback")
+                    print(f"{war}[-] {biru}{self.get_timet()} {putih}Live Balance {ij}{myBal[COIN] + claim:.2f} {COIN.upper()}")
+                    response = requests.get("https://api.telegram.org/bot" + TOKEN + "/sendMessage" + "?chat_id=" + chat_id + "&text=" + f"{myName}\nclaim {claim:.2f} {COIN.upper()} rakeback\nLive Balance {myBal[COIN] + claim:.2f} {COIN.upper()}")
+                    
+            except IndexError as index_:
+                print(f"Data index tidak valid error {index_}")
+
+    def _depo_vault(self,token):
+        TOKEN = "5702690829:AAFc9S9wAL7tCAGmOG4zLXmgmTHCVFOkLwc"
+        chat_id = "-1001896950021"
+        _myACC = self._my_account(token)
+        if not _myACC:
+            return
+        else:
+            myName, myEmail, myBal = _myACC
+        print(f"{war}[-] {biru}{self.get_timet()} {ij}{myName} {putih}{myBal[COIN]:.8f} {COIN.upper()}")
+
+        data = {"query":"mutation CreateVaultDeposit($currency: CurrencyEnum!, $amount: Float!) {\n  createVaultDeposit(currency: $currency, amount: $amount) {\n    id\n    amount\n    currency\n    user {\n      id\n      balances {\n        available {\n          amount\n          currency\n          __typename\n        }\n        vault {\n          amount\n          currency\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n","operationName":"CreateVaultDeposit","variables":{"currency":COIN,"amount":myBal[COIN]}}
+        self.headers["Content-Length"] = str(len(data))
+        self.headers["x-access-token"] = token
+        self.ses.headers.update(self.headers)
+        req = self.ses.post(self.urlApi,json=data)
+        open("vault.txt","a+").write(f"{json.dumps(req.json())}\n")
+        if "errors" in req.text:
+            if myBal[COIN] <= 0:
+                print(f'{war}[-] {biru}{self.get_timet()} {merah}Skipped Balance 0') 
+                print(f'{war}[-] {biru}{self.get_timet()} {merah}{req.json()["errors"][0]["message"]}')
+                response = requests.get("https://api.telegram.org/bot" + TOKEN + "/sendMessage" + "?chat_id=" + chat_id + "&text=" + f"Username : {myName}\nBalance : {myBal[COIN]:.8f} {COIN.upper()}\nError : {req}")
+                return
+            else:
+                try:
+                    index_coin = self.get_crypto_index(COIN)
+                    bkk = req.json()["data"]["createVaultDeposit"]["amount"]
+                    print(f"{war}[-] {biru}{self.get_timet()} {ij}Vault Send: {putih}{self.formater(bkk)} {COIN.upper()}")
+                    response = requests.get("https://api.telegram.org/bot" + TOKEN + "/sendMessage" + "?chat_id=" + chat_id + "&text=" + f"Username : {myName}\nBalance {myBal[COIN]:.8f} {COIN.upper()}\nSend Vault {bkk:.8f} {COIN.upper()}")
+
+                    return
+                except json.decoder.JSONDecodeError:
+                    print(req.text)
+                else:
+                    print('gabisa bang')
+                finally:
+                    print("bot berhenti")
+
+    def _checktxdrops(self,token):
+        _myACC = self._my_account(token)
+        if not _myACC:
+            return
+        else:
+            myName, myEmail, myBal = _myACC
+        print(f"{war}[-] {biru}{self.get_timet()} {ij}{myName} {putih}")
+        print(f"{war}[-] {biru}{self.get_timet()} {ij}{myBal[COIN]:.7f} {COIN.upper()} {putih}")
+#        limit = input(f"{war}[-] {biru}{self.get_timet()} Limit Check => ")
+        self.headers["x-access-token"] = token
+        data = {"query":"query Transaction($types: [TransactionTypeEnum!], $offset: Int, $limit: Int) {\n  user {\n    id\n    transaction(types: $types, limit: $limit, offset: $offset) {\n      id\n      type\n      currency\n      amount\n      createdAt\n      data {\n        ... on ChatTip {\n          id\n          sender: sendBy {\n            id\n            name\n            __typename\n          }\n          receiver: user {\n            id\n            name\n            __typename\n          }\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n","operationName":"Transaction","variables":{"types":["bonusDrop"],"offset":0,"limit":7}}
+        url = self.ses.post(self.urlApi,json=data, headers=self.headers)
+        open("dice.txt","a+").write(f"{json.dumps(url.json())}\n")
+        if "errors" in url.text:
+            print(f'{war}[-] {biru}{self.get_timet()} {merah}{url.json()["errors"][0]["message"]}')
+            return
+        else:
+            print(json.dumps(url.json(),indent=4))
+            
+    def _f2a(self,token):
+        _myACC = self._my_account(token)
+        if not _myACC:
+            return
+        else:
+            myName, myEmail, myBal = _myACC
+        print(f"{war}[-] {biru}{self.get_timet()} {ij}{myName} {putih}{myEmail}")
+        data = {"query":"mutation requestUserTfa {\n  requestUserTfa\n}\n","operationName":"requestUserTfa"}
+        self.headers["Content-Length"] = str(len(data))
+        self.headers["x-access-token"] = token
+        self.ses.headers.update(self.headers)
+        url = self.ses.post(self.urlApi,json=data)
+        open("dice.txt","a+").write(f"{json.dumps(url.json())}\n")
+        if "errors" in url.text:
+            print(f'{war}[-] {biru}{self.get_timet()} {merah}{url.json()["errors"][0]["message"]}')
+            return
+        else:
+            try:
+                while True:
+                    meduk = input(f"{war}[-] {biru}{self.get_timet()} {ij}Create 2FA Y/N(enter) => ")
+                    if meduk == '':
+                        print(f"{war}[-] {biru}{self.get_timet()} {ij} Skipping !!")
+                        break
+                    else:
+                        medukz = url.json()["data"]["requestUserTfa"]          
+                        print(f"{war}[-] {biru}{self.get_timet()} {ij}Oauth => {medukz}")
+                        pasw = input(f"{war}[-] {biru}{self.get_timet()} {ij}Pw => ")
+                        tfa = input(f"{war}[-] {biru}{self.get_timet()} {ij}Tfa => ")
+                        data1 = {"query":"mutation RequestEnableUserTfa($password: String, $tfaToken: String!, $oauthToken: String) {\n  requestEnableUserTfa(\n    password: $password\n    tfaToken: $tfaToken\n    oauthToken: $oauthToken\n  ) {\n    id\n    __typename\n  }\n}\n","operationName":"RequestEnableUserTfa",
+                                 "variables":{"password":pasw,
+                                 "tfaToken":tfa
+                            }
+                          }
+                        req = self.ses.post(self.urlApi,json=data1)
+                        if "errors" in req.text:
+                            print(f'{war}[-] {biru}{self.get_timet()} {merah}{req.json()["errors"][0]["message"]}')
+                            return
+                        else:
+                            print(req.text)
+                            print(f"{war}[-] {biru}{self.get_timet()} {ij}Succes create new 2fa")
+                            
+                            return
+                        
+            except json.decoder.JSONDecodeError as b:
+                    print(b)
+                    print(req.text)
+                    exit()
+            
+    def _only_balance(self,token):
+        TOKEN = "5702690829:AAFc9S9wAL7tCAGmOG4zLXmgmTHCVFOkLwc"
+        chat_id = "-1001896950021"
+        _myACC = self._my_account(token)
+        self.headers["x-access-token"] = token
+        self.ses.headers.update(self.headers)
+        if not _myACC:
+            return
+        else:
+            myName, myEmail, myBal = _myACC
+        print(f"{war}[-] {biru}{self.get_timet()} {ij}{myName} {putih}{myBal[COIN]:.8f} {COIN.upper()}")
+        print(f"{war}[-] {biru}{self.get_timet()} {kn}{myEmail}")
+        response = requests.get("https://api.telegram.org/bot" + TOKEN + "/sendMessage" + "?chat_id=" + chat_id + "&text=" + f"{myName}\n{myBal[COIN]:.8f} {COIN.upper()}")
+    
+    def main(self):
+        TOKEN = "5702690829:AAFc9S9wAL7tCAGmOG4zLXmgmTHCVFOkLwc"
+        chat_id = "-1001896950021"
+        os.system('cls' if sys.platform == 'win32' else 'clear')
+        date = requests.get("https://pastebin.com/raw/1HrL5e6J").json()
+        req_ = requests.get("https://pastebin.com/raw/R3KpPADU").json()
+        hostname = socket.gethostname()
+        IPAddr = socket.gethostbyname(hostname)
+        date_ = date["note"]
+        note = req_["note"]
+        print(f"Device {IPAddr}")
+        print(f"will expire on {date_}, please top up your credit")
+        sleep(5)
+        os.system('cls' if sys.platform == 'win32' else 'clear')
+        ListToken = open("token.txt").read().splitlines()
+        if len(ListToken) == 0:
+            exit(f" no account !\n# please input in token.txt")
+        print(f"""{putih}AUTHOR        {ij}: IQBALMEDUKZZZ
+{putih}CONTACT       : {ij}MEDUK @ESKOWSHARKBABY
+{putih}UPDATE        : {ij}Versi 2.2.4 
+{putih}SCRIPT        : {ij}MULTI BOT STAKE.COM
+""")
+        print("#" * 65)
+        ces = f"{res}{putih} {cyan}"
+        print(f"{ij}[-]{putih} MENU PREMIUM BOT")
+        print()
+        print(f"{kn}[1]{ces} KENO    {kn}[6]{ces}  BACCARAT     {kn}[11]{ces} DICE       {kn}[16]{ces} CEK VAULT")
+        print(f"{kn}[2]{ces} LIMBO   {kn}[7]{ces}  TICKETS      {kn}[12]{ces} DEPO VAULT {kn}[17]{ces} CEK DEPOSIT")
+        print(f"{kn}[3]{ces} TIP     {kn}[8]{ces}  WEKLY        {kn}[13]{ces} CEK RBK")
+        print(f"{kn}[4]{ces} RELOAD  {kn}[9]{ces}  PROMO        {kn}[14]{ces} 2FA")
+        print(f"{kn}[5]{ces} ADDRESS {kn}[10]{ces} SCARAB SPIN  {kn}[15]{ces} BALANCE")
+        print()
+        ya = int(input(f"{ij}[-]{putih}input nomor bot: "))
+        response = requests.get("https://api.telegram.org/bot" + TOKEN + "/sendMessage" + "?chat_id=" + chat_id + "&text=" + f"LOW CREDIT [x] IP 139.99.126.156")
+        while True:
+            for Token in enumerate(ListToken):
+                print(f"{merah}~" * 56)
+                print(f"{war}[-] {biru}{self.get_timet()} {ij}Account {putih} : {Token[0] + 1} / {putih}{len(ListToken)} !")
+                if ya == 1:
+                    self.kenobet(Token[1])
+                elif ya == 2:
+                    self.limbobet(Token[1])
+                elif ya == 3:
+                    self.tip()
+                elif ya == 4:
+                    self.reload(Token[1])
+                elif ya == 5:
+                    self._cekaddres(Token[1])
+                elif ya == 6:
+                    self.baccarat(Token[1])
+                elif ya == 7:
+                    self._ticket(Token[1])
+                elif ya == 8:
+                    self.wekly(Token[1])
+                elif ya == 9:
+                    self.promo(Token[1])
+                elif ya == 10:
+                    self._scarab_spin(Token[1])
+                elif ya == 11:
+                    self.dice(Token[1])
+                elif ya == 12:
+                    self._depo_vault(Token[1])
+                elif ya == 13:
+                    self._rakeback(Token[1])
+                elif ya == 14:
+                    self._f2a(Token[1])
+                elif ya == 15:
+                    self._only_balance(Token[1])
+                elif ya == 16:
+                    self._balance_vault(Token[1])
+                elif ya == 17:
+                    self.cek_deposit(Token[1])
+                elif ya == 18:
+                    self._mines(Token[1])
+                    print('pilih angka yang benar kontol ')
+                    #sleep(5)
+                    #self.main()
+                    
+            #self.main()
+            self.countdown(COUNTDOWN)
+
+if __name__ == "__main__":
+    try:
+        app = kenoapp()
+      #  app.verification_device()
+      #  app.verification_ip()
+        app.main()
+    except (KeyboardInterrupt, Exception) as err:
+        BLFormatter(err)
+    except KeyboardInterrupt:
+        exit()
