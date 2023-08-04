@@ -1,0 +1,406 @@
+import argparse
+import os,sys
+import json
+import random
+import time
+import re
+import colorama
+import socket
+import traceback
+from random import choice
+from config import *
+from colorama import *
+from time import sleep
+from datetime import datetime
+from requests.models import HTTPError, ReadTimeoutError
+from anticaptchaofficial.hcaptchaproxyless import *
+from hashlib import md5
+from getpass import getuser
+from pathlib import Path
+sys.dont_write_bytecode = True
+colorama.init()
+try:
+    import requests
+    from colorama import *
+    init(autoreset=True)
+    kuning = "\033[93m"
+    ab = "\033[90m"
+    rd = "\033[91m"
+    ij = "\033[92m"
+    kn = "\033[93m"
+    rs = "\033[0;0m"
+    sp = f"{ab}|{rs}"
+    # CONFIG WARNA
+    res = Style.RESET_ALL
+    putih = Style.NORMAL + Fore.WHITE
+    putih2 = Style.BRIGHT + Fore.WHITE
+    hitam = Style.BRIGHT + Fore.BLACK
+    hitam2 = Style.BRIGHT + Fore.BLACK
+    ungu = Style.NORMAL + Fore.MAGENTA
+    hijau = Style.NORMAL + Fore.GREEN
+    hijau2 = Style.BRIGHT + Fore.GREEN
+    merah = Style.NORMAL + Fore.RED
+    merah2 = Style.BRIGHT + Fore.RED
+    biru = Style.NORMAL + Fore.BLUE
+    biru2 = Style.BRIGHT + Fore.BLUE
+    biru3 = Style.BRIGHT + Fore.LIGHTCYAN_EX
+    profcolor = Style.BRIGHT + Back.GREEN + Fore.WHITE
+    losecolor = Style.BRIGHT + Back.RED + Fore.WHITE
+    rccolor = Style.BRIGHT + Back.WHITE + Fore.BLACK
+    rcfontcolor = Style.NORMAL + Fore.BLACK
+    kuning = Style.NORMAL + Fore.YELLOW
+    kuning2 = Style.BRIGHT + Fore.YELLOW
+    cyan = Style.NORMAL + Fore.CYAN
+    cyan2 = Style.BRIGHT + Fore.LIGHTCYAN_EX
+    merah = Fore.LIGHTRED_EX
+    hijau = Fore.LIGHTGREEN_EX
+    biru = Fore.LIGHTBLUE_EX
+    magenta = Fore.LIGHTMAGENTA_EX
+    cyan = Fore.LIGHTCYAN_EX
+    hitam = Fore.LIGHTBLACK_EX
+    putih = Fore.LIGHTWHITE_EX
+    ab = "\033[90m"
+    rd = "\033[91m"
+    ij = "\033[92m"
+    kn = "\033[93m"
+    rs = "\033[0;0m"
+    sp = f"{ab}|{rs}"
+    babi = [ungu, ij, rs, cyan, biru, magenta]
+    war = random.choice(babi) 
+except ImportError as rrr:
+    exit(f"# module not installed ! {rrr}")
+ 
+#_dumps = lambda obj, **kwargs: ujson.dumps(obj, escape_forward_slashes=False, **kwargs)
+   
+class _printex:
+    def __init__(self, msg, err_code: int = 0):
+        print(msg)
+        sys.exit(err_code)
+
+
+class BLBaseException(Exception):
+    """bancetzLaut base exceptions."""
+
+
+class BLFormatter(BLBaseException):
+    """Beautify exceptions."""
+
+    def __init__(self, err):
+        if type(err).__name__ == "KeyboardInterrupt":
+            _printex(
+                f"\r\x1b[1C\x1b[1K\r\n\n{rd}#Iqbalmedukzz:{rs} {kn}Bot terminated! (ctrl + c).{rs}\n"
+            )
+        else:
+            _errMsg = err
+            _errType = type(err).__name__
+
+            _wantedFrame = {}
+            _unwantedFrame = []
+
+            _stack = traceback.extract_tb(_errMsg.__traceback__)
+            for _ in _stack:
+                if "bin" in _.filename:
+                    _.filename = Path(_.filename).stem
+                elif Path(_.filename).parent.is_relative_to(Path.cwd()):
+                    _.filename = Path(_.filename).stem
+                if _.name != "<module>" and "python" not in _.filename:
+                    if _.filename not in _wantedFrame:
+                        _wantedFrame.update({_.filename: _})
+                    else:
+                        _wantedFrame[_.filename] = _
+                else:
+                    _unwantedFrame.append(_)
+            _stack = [_ for _ in _stack if _ not in _unwantedFrame]
+            _stack = "Traceback (recent call):\n" + "".join(
+                [
+                    ("%s\n" % _.split("\n")[0])
+                    for _ in traceback.format_list(
+                        _unwantedFrame[:1]
+                        if not _wantedFrame
+                        else [v for k, v in _wantedFrame.items()]
+                    )
+                ]
+            )
+            _errStack = _stack
+
+            _printex(
+                f"\n\n{kn}{_errStack}{rs}" f"\n{rd}{_errType}:{rs} {kn}{_errMsg}{rs}\n"
+            )
+class kenoapp:
+    def __init__(self):
+        self.sitekey = "7830874c-13ad-4cfe-98d7-e8b019dc1742"
+        self.siteurl = f"https://{mirror}/"
+        req = requests.get("https://pastebin.com/raw/fxLc9LGQ").json()
+        self.note = req["note"]
+        self.urlApi = f"https://{mirror}/_api/graphql"
+        self.ses = requests.Session()
+        self.stake_api = f"https://{mirror}/_api/graphql"
+        self.akunke = 0
+        self.headers = {
+            "accept": "*/*",
+            "accept-language": "en-US,en;q=0.9",
+            "content-type": "application/json",
+            "origin": f"https://{mirror}",
+            "referer": f"https://{mirror}/casino/games/limbo",
+            "User-agent": f"{AGENT}",
+            "cookie": COKIE,
+            "x-lockdown-token": "s5MNWtjTM5TvCMkAzxov"
+            }
+        self.ses.headers.update({
+            "accept": "*/*",
+            "accept-language": "en-US,en;q=0.9",
+            "content-type": "application/json",
+            "origin": f"https://{mirror}",
+            "referer": f"https://{mirror}/casino/games/limbo",
+            "User-agent": f"{AGENT}",
+            "cookie": COKIE,
+            "x-lockdown-token": "s5MNWtjTM5TvCMkAzxov"
+            })
+        
+        
+    def verification_device(self):
+        ListToken = open("token.txt").read().splitlines()
+        for token in ListToken:
+            data = {
+             "query": "query initialUserRequest {\n  user {\n    ...UserAuth\n    __typename\n  }\n}\n\nfragment UserAuth on User {\n  id\n  name\n  email\n  hasPhoneNumberVerified\n  hasEmailVerified\n  hasPassword\n  intercomHash\n  createdAt\n  hasTfaEnabled\n  mixpanelId\n  hasOauth\n  flags {\n    flag\n    __typename\n  }\n  roles {\n    name\n    __typename\n  }\n  balances {\n    ...UserBalanceFragment\n    __typename\n  }\n  activeClientSeed {\n    id\n    seed\n    __typename\n  }\n  previousServerSeed {\n    id\n    seed\n    __typename\n  }\n  activeServerSeed {\n    id\n    seedHash\n    nextSeedHash\n    nonce\n    blocked\n    __typename\n  }\n  __typename\n}\n\nfragment UserBalanceFragment on UserBalance {\n  available {\n    amount\n    currency\n    __typename\n  }\n  vault {\n    amount\n    currency\n    __typename\n  }\n  __typename\n}\n",
+             "operationName": "initialUserRequest",
+             "variables": {}
+                }
+            #self.headers["Content-Length"] = str(len(data))
+            self.ses.headers["x-access-token"] = token
+            #self.ses.headers.update(self.headers)
+            try:
+                req = self.ses.post(self.urlApi,json=data,timeout=17)
+                print(req)
+            except ReadTimeoutError:
+                print(req)
+            for i in req:
+                getusername = req.json()['data']['user']['name']
+                req = requests.get("https://pastebin.com/raw/RJVsG7B0").json()
+                if getusername in req["list-username"]:
+                    return
+                else:
+                    print()
+                    print(getusername,"\n")
+                    print("Your username Unlisted member of XYZ Team Project ! :")
+                    time.sleep(2)
+                    sys.exit()
+            
+    def verification_ip(self):
+        hostname = socket.gethostname()
+        IPAddr = socket.gethostbyname(hostname)
+        req = requests.get("https://pastebin.com/raw/0NCUTVFu").json()
+        self.note = req["note"]
+        if IPAddr in req["meduk"]:
+            return
+        else:
+            print()
+            print(IPAddr,"\n")
+            print(hostname)
+            print("Your Unlisted member of XYZ Team Project ! :")
+            time.sleep(2)
+            sys.exit()
+
+    def formatAmo(self,amo):
+        return "{:.8f}".format(amo)
+        
+    def _my_account(self, token):
+        data = {
+             "query": "query initialUserRequest {\n  user {\n    ...UserAuth\n    __typename\n  }\n}\n\nfragment UserAuth on User {\n  id\n  name\n  email\n  hasPhoneNumberVerified\n  hasEmailVerified\n  hasPassword\n  intercomHash\n  createdAt\n  hasTfaEnabled\n  mixpanelId\n  hasOauth\n  flags {\n    flag\n    __typename\n  }\n  roles {\n    name\n    __typename\n  }\n  balances {\n    ...UserBalanceFragment\n    __typename\n  }\n  activeClientSeed {\n    id\n    seed\n    __typename\n  }\n  previousServerSeed {\n    id\n    seed\n    __typename\n  }\n  activeServerSeed {\n    id\n    seedHash\n    nextSeedHash\n    nonce\n    blocked\n    __typename\n  }\n  __typename\n}\n\nfragment UserBalanceFragment on UserBalance {\n  available {\n    amount\n    currency\n    __typename\n  }\n  vault {\n    amount\n    currency\n    __typename\n  }\n  __typename\n}\n",
+             "operationName": "initialUserRequest",
+             "variables": {}
+        }
+        retries = 0
+        while True:
+            retries += 1
+            try:
+                ret = self.ses.post(self.urlApi, json=data, headers = {**self.headers, "x-access-token": token})
+                ret = ret.json()
+            except Exception as err:
+                if retries <= 3:
+                    continue
+                else:
+                    print(f"Your IP is blocked by stake, skip account")
+                    print(f"cookies Expired")
+                    #
+                    return
+            else:
+                if "errors" in ret:
+                    if ret["errors"][0]["errorType"] == "disabledSession":
+                        print(f"{ij}[•] {self.get_timet()} {hijau}Fail: Session disabled!")
+                    else:
+                        print(
+                            f"{ij}[•] {self.get_timet()} {merah}Fail: {ret['errors'][0]['errorType']}\n"
+                            f"{ij}[•] {self.get_timet()} {merah}{ret['errors'][0]['message']}"
+                        )
+                    print(f"{ij}[•] {self.get_timet()} {merah}Account skipped!!")
+                    return
+                else:
+                    username = ret['data']['user']['name']
+                    email = f"{ret['data']['user']['email'].split('@')[0][:4]}**"\
+                            f"@{ret['data']['user']['email'].split('@')[1].split('.')[0]}"
+                    balance = {
+                        currency: amount
+                        for amount, currency, _ in
+                        [
+                          i['available'].values() for i in ret['data']['user']['balances']
+                        ]
+                    }
+                    return [username, email, balance]
+    
+    def dice(self,token):
+        _myACC = self._my_account(token)
+        if not _myACC:
+            return
+        else:
+            myName, myEmail, myBal = _myACC
+        print(f"{putih}{myName.upper()} | {myBal[COIN]:.8f} {COIN.upper()}\n")
+        wager = 0
+        totalRoll = 0
+        profit = 0
+        loseStrike = 0
+        totalLose = 0
+        winStrike = 0
+        totalWin = 0
+        self.ses.headers["x-access-token"] = token
+        awal = datetime.now().replace(microsecond=0)
+        bet = basebet
+        lastProfit = profit
+        retries = 0
+        #data_kurs = {  "query": "query CurrencyConversionRate {\n  info {\n    currencies {\n      name\n      eur: value(fiatCurrency: eur)\n      jpy: value(fiatCurrency: jpy)\n      usd: value(fiatCurrency: usd)\n      brl: value(fiatCurrency: brl)\n      cad: value(fiatCurrency: cad)\n      cny: value(fiatCurrency: cny)\n      idr: value(fiatCurrency: idr)\n      inr: value(fiatCurrency: inr)\n      krw: value(fiatCurrency: krw)\n      php: value(fiatCurrency: php)\n      rub: value(fiatCurrency: rub)\n      mxn: value(fiatCurrency: mxn)\n      dkk: value(fiatCurrency: dkk)\n    }\n  }\n}\n","variables": {}}
+        #req_kurs = self.ses.post(self.stake_api, json=data_kurs)
+        #kurs_crypto_usd = self.kurscrypto(req_kurs.json()['data']['info']['currencies'])
+
+        while True:
+            lose1 = 0
+            retries += 1
+            data_kurs = {  "query": "query CurrencyConversionRate {\n  info {\n    currencies {\n      name\n      eur: value(fiatCurrency: eur)\n      jpy: value(fiatCurrency: jpy)\n      usd: value(fiatCurrency: usd)\n      brl: value(fiatCurrency: brl)\n      cad: value(fiatCurrency: cad)\n      cny: value(fiatCurrency: cny)\n      idr: value(fiatCurrency: idr)\n      inr: value(fiatCurrency: inr)\n      krw: value(fiatCurrency: krw)\n      php: value(fiatCurrency: php)\n      rub: value(fiatCurrency: rub)\n      mxn: value(fiatCurrency: mxn)\n      dkk: value(fiatCurrency: dkk)\n    }\n  }\n}\n","variables": {}}
+            req_kurs = self.ses.post(self.stake_api, json=data_kurs)
+            kurs_crypto_usd = self.kurscrypto(req_kurs.json()['data']['info']['currencies'])
+            data = {"query":"mutation PlinkoBet($amount: Float!, $currency: CurrencyEnum!, $risk: CasinoGamePlinkoRiskEnum!, $rows: Int!, $identifier: String!) {\n  plinkoBet(\n    amount: $amount\n    currency: $currency\n    risk: $risk\n    rows: $rows\n    identifier: $identifier\n  ) {\n    ...CasinoBet\n    state {\n      ...CasinoGamePlinko\n    }\n  }\n}\n\nfragment CasinoBet on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n  }\n}\n\nfragment CasinoGamePlinko on CasinoGamePlinko {\n  risk\n  rows\n  point\n  path\n}\n","variables":{"currency":COIN,"amount":bet,"rows":pin,"risk":risk,"identifier":"JfaxEUOXYWFTY1lBlQ_PU"}}
+            #req = requests.post(url,json=data,headers=self.headers,timeout=7)
+            #reqbal = self.ses.post(self.urlApi,json={"query":"query UserBalances {\n  user {\n    id\n    balances {\n      available {\n        amount\n        currency\n        __typename\n      }\n      vault {\n        amount\n        currency\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n","operationName":"UserBalances"},headers=self.headers,timeout=60000).json()
+            #balance = float(self.formatAmo(self.parsBalance(reqbal["data"]["user"]["balances"])))
+            req = self.ses.post(self.urlApi,json=data,timeout=7)
+            if "errors" in req.text:
+                print(f"{merah} => {req.json()['errors'][0]['message'].upper()}")
+                print(f"{ij} => Skipping Next Account !!!")
+                return
+            if myBal[COIN] <= 0:
+                print(f"** skipped!")
+                return
+            else:
+                try:
+                    peler = req.json()["data"]["plinkoBet"]["payoutMultiplier"]
+                    payout = req.json()["data"]["plinkoBet"]["payout"]
+                    amount = req.json()["data"]["plinkoBet"]["amount"]
+                    amo = req.json()["data"]["plinkoBet"]["amountMultiplier"]
+                    #target = req.json()["data"]["plinkoBet"]["state"]["target"]
+                    akhir = datetime.now().replace(microsecond=0)
+                    waktu = akhir - awal
+                    totalRoll += 1
+                    wager += amount
+
+                    if payout > 0:
+                        totalLose = 0
+                        warna = Fore.LIGHTYELLOW_EX
+                        totalWin += 1
+                        profit += (payout - amount)
+                        if totalWin > winStrike:
+                            winStrike += 1
+                        if ifwin != 0:
+                            ## implementasi `reset if profit`
+                            if profit >= (lastProfit + resetIfProfit):
+                                bet = basebet
+                                lastProfit = profit
+                            else:
+                                ## kalok `reset if profit` belon terpenuhi, kalikan tarohan dg `if win`
+                                bet *= ifwin
+                        else:
+                            bet = basebet
+                        print(f" {bet:.8f} {profcolor}|+|{rs} {amo:.8f} {profit:.8f} {wager:.8f} ({peler:>4})") #(${round(balance*kurs_crypto_usd,2)})")
+                    else:
+                        chance = random.uniform(Min1,Max1)
+                        totalWin = 0
+                        warna = Fore.LIGHTYELLOW_EX
+                        totalLose += 1
+                        profit -= amount
+                        if totalLose > loseStrike:
+                            loseStrike += 1
+                        if iflose != 0:
+                            bet *= iflose
+                        else:
+                            bet = basebet
+                        print(f" {bet:.8f} {losecolor}|x|{rs} {amo:.8f} {profit:.8f} {wager:.8f} ({peler:>4})") # (${round(balance*kurs_crypto_usd,2)})")
+                    print(f"  {ab}{COIN.upper()} (${round(wager*kurs_crypto_usd,2)}) • {waktu} {ab}({merah}{totalLose}{ab}/{ij}{totalWin}{ab}) {ab}({merah}{loseStrike}{ab}/{ij}{winStrike}{ab}) Roll: {totalRoll} ",flush=True,end='\r')
+                    if profit >= targetprofit:
+                        print()
+                        print(f"{ij} • TARGET PROFIT REACTED !")
+                        print(f"{ij} • Profit  : {targetprofit:.8f} {COIN.lower()} Terpenuhi !")
+                        print(f"{ij} • Balance : {myBal[COIN]:.8f} {COIN.lower()} /","$",round(myBal[COIN]*kurs_crypto_usd,2))
+                        print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")
+                        print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
+                        return
+                    if totalRoll >= troll:
+                        print()
+                        print(f"{ij} • TARGET ROLL REACTED !")
+                        print(f"{ij} • Rools   : {troll} Terpenuhi !")
+                        print(f"{ij} • Balance : {myBal[COIN]:.8f} {COIN.lower()} /","$",round(myBal[COIN]*kurs_crypto_usd,2))
+                        print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")
+                        print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
+                        return 
+                    if myBal[COIN] >= targetbalance:
+                        print()                  
+                        print(f"{ij} • TARGET BALANCE REACTED !")
+                        print(f"{ij} • Target  : {targetbalance:.8f} {COIN.lower()} Terpenuhi !")
+                        print(f"{ij} • Balance : {myBal[COIN]:.8f} {COIN.lower()} /","$",round(myBal[COIN]*kurs_crypto_usd,2))
+                        print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")()
+                        print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
+                        return
+                    if profit <= -targetlose:
+                        print()
+                        print(f"{ij} • TARGET LOSE REACTED !")
+                        print(f"{ij} • Target  : -{targetlose:.8f} LOSE Terpenuhi !")
+                        print(f"{ij} • Balance : {myBal[COIN]:.8f} {COIN.lower()}")
+                        print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")
+                        print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
+                        return
+
+                except json.decoder.JSONDecodeError:
+                    print(req.text)
+                    exit()
+                    
+    def main(self):
+        os.system('cls' if sys.platform == 'win32' else 'clear')
+        date = requests.get("https://pastebin.com/raw/1HrL5e6J").json()
+        req_ = requests.get("https://pastebin.com/raw/R3KpPADU").json()
+        hostname = socket.gethostname()
+        IPAddr = socket.gethostbyname(hostname)
+        date_ = date["note"]
+        note = req_["note"]
+        print(f"Device {IPAddr}")
+        print(f"will expire on {date_}, please top up your credit")
+        sleep(5)
+        os.system('cls' if sys.platform == 'win32' else 'clear')
+        ListToken = open("token.txt").read().splitlines()
+        if len(ListToken) == 0:
+            exit(f" no account !\n# please input in token.txt")
+        print(f"""{putih}AUTHOR        {ij}: IQBALMEDUKZZZ
+{putih}CONTACT       : {ij}MEDUK @ESKOWSHARKBABY
+{putih}UPDATE        : {ij}Versi 2.2.4 
+{putih}SCRIPT        : {ij}MULTI BOT STAKE.COM
+""")
+        while True:
+            for Token in enumerate(ListToken):           
+                self.dice(Token[1])
+
+if __name__ == "__main__":
+    try:
+        app = kenoapp()
+        app.verification_device()
+        app.verification_ip()
+        app.main()
+    except (KeyboardInterrupt, Exception) as err:
+        BLFormatter(err)
+    except KeyboardInterrupt:
+        exit()
