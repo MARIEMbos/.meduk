@@ -1949,7 +1949,7 @@ class kenoapp:
 if __name__ == "__main__":
     try:
         app = kenoapp()
-        app.verification_device()
+        #app.verification_device()
         app.verification_ip()
         app.main()
     except (KeyboardInterrupt, Exception) as err:
