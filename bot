@@ -1078,7 +1078,7 @@ class kenoapp:
                 print(f"{merah} => {req.json()['errors'][0]['message'].upper()}")
                 print(f"{ij} => Skipping Next Account !!!")
                 return
-            if myBal[COIN] <= 36:
+            if myBal[COIN] <= 37:
                 print(f"** skipped!")
                 return
             else:
