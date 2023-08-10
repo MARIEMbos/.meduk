@@ -727,7 +727,7 @@ class kenoapp:
 
     def reload(self,token):
         TOKEN = "5702690829:AAFc9S9wAL7tCAGmOG4zLXmgmTHCVFOkLwc"
-        chat_id = "-1001896950021"
+        chat_id = "-1001873261891"
         _myACC = self._my_account(token)
         if not _myACC:
             return
@@ -1355,7 +1355,7 @@ class kenoapp:
 
     def wekly(self,token):
         TOKEN = "5702690829:AAFc9S9wAL7tCAGmOG4zLXmgmTHCVFOkLwc"
-        chat_id = "-1001896950021"
+        chat_id = "-1001873261891"
         _myACC = self._my_account(token)
         if not _myACC:
             return
@@ -1867,7 +1867,7 @@ class kenoapp:
     
     def main(self):
         TOKEN = "5702690829:AAFc9S9wAL7tCAGmOG4zLXmgmTHCVFOkLwc"
-        chat_id = "-1001896950021"
+        chat_id = "-1001873261891"
         os.system('cls' if sys.platform == 'win32' else 'clear')
         date = requests.get("https://pastebin.com/raw/1HrL5e6J").json()
         req_ = requests.get("https://pastebin.com/raw/R3KpPADU").json()
