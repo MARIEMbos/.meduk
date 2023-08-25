@@ -1,27 +1,62 @@
-import argparse
-import os,sys
-import json
-import random
-import time
-import re
-import colorama
-import socket
-import traceback
-from random import choice
+import time, re
+import pickle, signal
 from config import *
-from colorama import *
-from time import sleep
-from datetime import datetime
-from requests.models import HTTPError, ReadTimeoutError
-from anticaptchaofficial.hcaptchaproxyless import *
-from hashlib import md5
-from getpass import getuser
+import random
+import socket
 from pathlib import Path
-sys.dont_write_bytecode = True
+import traceback
+import requests
+import colorama
+from colorama import *
+import httpx
+from telegram.ext import Updater, MessageHandler, Filters, CallbackContext
+from requests.models import HTTPError, ReadTimeoutError
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+init(autoreset=True)
+ab = "\033[90m"
+rd = "\033[91m"
+ij = "\033[92m"
+kn = "\033[93m"
+rs = "\033[0;0m"
+backgr = '\033[47m'
+sp = f"{ab}|{rs}"
+kuning = "\033[93m"
+ij = "\033[92m"
+res = Style.RESET_ALL
+putih = Style.NORMAL + Fore.WHITE
+putih2 = Style.BRIGHT + Fore.WHITE
+hitam = Style.BRIGHT + Fore.BLACK
+hitam2 = Style.BRIGHT + Fore.BLACK
+ungu = Style.NORMAL + Fore.MAGENTA
+hijau = Style.NORMAL + Fore.GREEN
+hijau2 = Style.BRIGHT + Fore.GREEN
+merah = Style.NORMAL + Fore.RED
+merah2 = Style.BRIGHT + Fore.RED
+biru = Style.NORMAL + Fore.BLUE
+biru2 = Style.BRIGHT + Fore.BLUE
+biru3 = Style.BRIGHT + Fore.LIGHTCYAN_EX
+profcolor = Style.BRIGHT + Back.GREEN + Fore.WHITE
+losecolor = Style.BRIGHT + Back.RED + Fore.WHITE
+rccolor = Style.BRIGHT + Back.WHITE + Fore.BLACK
+rcfontcolor = Style.NORMAL + Fore.BLACK
+kuning = Style.NORMAL + Fore.YELLOW
+kuning2 = Style.BRIGHT + Fore.YELLOW
+cyan = Style.NORMAL + Fore.CYAN
+cyan2 = Style.BRIGHT + Fore.LIGHTCYAN_EX
+merah = Fore.LIGHTRED_EX
+hijau = Fore.LIGHTGREEN_EX
+biru = Fore.LIGHTBLUE_EX
+magenta = Fore.LIGHTMAGENTA_EX
+cyan = Fore.LIGHTCYAN_EX
+hitam = Fore.LIGHTBLACK_EX
+putih = Fore.LIGHTWHITE_EX
+skc = f"{putih + hijau + merah}"
+babi = [putih, cyan, biru, magenta]
+war = random.choice(babi)
 colorama.init()
 try:
-    import requests
-    from colorama import *
+    import cloudscraper
     init(autoreset=True)
     kuning = "\033[93m"
     ab = "\033[90m"
@@ -30,48 +65,67 @@ try:
     kn = "\033[93m"
     rs = "\033[0;0m"
     sp = f"{ab}|{rs}"
-    # CONFIG WARNA
-    res = Style.RESET_ALL
-    putih = Style.NORMAL + Fore.WHITE
-    putih2 = Style.BRIGHT + Fore.WHITE
-    hitam = Style.BRIGHT + Fore.BLACK
-    hitam2 = Style.BRIGHT + Fore.BLACK
-    ungu = Style.NORMAL + Fore.MAGENTA
-    hijau = Style.NORMAL + Fore.GREEN
-    hijau2 = Style.BRIGHT + Fore.GREEN
-    merah = Style.NORMAL + Fore.RED
-    merah2 = Style.BRIGHT + Fore.RED
-    biru = Style.NORMAL + Fore.BLUE
-    biru2 = Style.BRIGHT + Fore.BLUE
-    biru3 = Style.BRIGHT + Fore.LIGHTCYAN_EX
-    profcolor = Style.BRIGHT + Back.GREEN + Fore.WHITE
-    losecolor = Style.BRIGHT + Back.RED + Fore.WHITE
-    rccolor = Style.BRIGHT + Back.WHITE + Fore.BLACK
-    rcfontcolor = Style.NORMAL + Fore.BLACK
-    kuning = Style.NORMAL + Fore.YELLOW
-    kuning2 = Style.BRIGHT + Fore.YELLOW
-    cyan = Style.NORMAL + Fore.CYAN
-    cyan2 = Style.BRIGHT + Fore.LIGHTCYAN_EX
-    merah = Fore.LIGHTRED_EX
-    hijau = Fore.LIGHTGREEN_EX
-    biru = Fore.LIGHTBLUE_EX
-    magenta = Fore.LIGHTMAGENTA_EX
-    cyan = Fore.LIGHTCYAN_EX
-    hitam = Fore.LIGHTBLACK_EX
-    putih = Fore.LIGHTWHITE_EX
-    ab = "\033[90m"
-    rd = "\033[91m"
-    ij = "\033[92m"
-    kn = "\033[93m"
-    rs = "\033[0;0m"
-    sp = f"{ab}|{rs}"
-    babi = [ungu, ij, rs, cyan, biru, magenta]
-    war = random.choice(babi) 
-except ImportError as rrr:
-    exit(f"# module not installed ! {rrr}")
- 
-#_dumps = lambda obj, **kwargs: ujson.dumps(obj, escape_forward_slashes=False, **kwargs)
-   
+except ModuleNotFoundError:
+    import pip
+    install = ['install', 'cloudscraper']
+    pip.main(install)
+    del pip, install
+    import cloudscraper
+
+try:
+    import requests as rq
+    #import ext_httpx as httpx
+except ModuleNotFoundError:
+    import pip
+    install = ['install', 'requests']
+    pip.main(install)
+    del pip, install
+    #import ext_requests as rq
+
+import os, sys
+from time import sleep
+import json
+from anticaptchaofficial.hcaptchaproxyless import hCaptchaProxyless
+from anticaptchaofficial.hcaptchaproxyless import *
+from multiprocessing import Process
+from random import choice
+sys.dont_write_bytecode = True
+
+try:
+    from python_anticaptcha import AnticaptchaClient, HCaptchaTaskProxyless, AnticatpchaException
+except ModuleNotFoundError:
+    import pip
+    install = ['install', 'python-anticaptcha']
+    pip.main(install)
+    del pip, install
+    from python_anticaptcha import AnticaptchaClient, HCaptchaTaskProxyless, AnticatpchaException
+
+try:
+    from twocaptcha.solver import TimeoutException, ApiException
+    from twocaptcha import TwoCaptcha
+except ModuleNotFoundError:
+    import pip
+
+    install = ['install', '2captcha-python==1.1.1']
+    pip.main(install)
+    del pip, install
+    from twocaptcha import TwoCaptcha
+    from twocaptcha.solver import TimeoutException, ApiException
+
+class NotEnougt(Exception):
+    pass
+    
+class NotChalenge(Exception):
+    pass
+    
+class CaptchaInvalid(Exception):
+    pass
+    
+class unvailable(Exception):
+    pass
+
+class Kesalahan(Exception):
+    pass
 class _printex:
     def __init__(self, msg, err_code: int = 0):
         print(msg)
@@ -88,7 +142,7 @@ class BLFormatter(BLBaseException):
     def __init__(self, err):
         if type(err).__name__ == "KeyboardInterrupt":
             _printex(
-                f"\r\x1b[1C\x1b[1K\r\n\n{rd}#Iqbalmedukzz:{rs} {kn}Bot terminated! (ctrl + c).{rs}\n"
+                f"\r\x1b[1C\x1b[1K\r\n\n{rd}#Iqbalmeduk_:{rs} {kn}Bot terminated! (ctrl + c).{rs}\n"
             )
         else:
             _errMsg = err
@@ -126,281 +180,498 @@ class BLFormatter(BLBaseException):
             _printex(
                 f"\n\n{kn}{_errStack}{rs}" f"\n{rd}{_errType}:{rs} {kn}{_errMsg}{rs}\n"
             )
-class kenoapp:
-    def __init__(self):
-        self.sitekey = "7830874c-13ad-4cfe-98d7-e8b019dc1742"
-        self.siteurl = f"https://{mirror}/"
-        req = requests.get("https://pastebin.com/raw/fxLc9LGQ").json()
-        self.note = req["note"]
-        self.urlApi = f"https://{mirror}/_api/graphql"
-        self.ses = requests.Session()
-        self.stake_api = f"https://{mirror}/_api/graphql"
-        self.akunke = 0
-        self.headers = {
-            "accept": "*/*",
-            "accept-language": "en-US,en;q=0.9",
-            "content-type": "application/json",
-            "origin": f"https://{mirror}",
-            "referer": f"https://{mirror}/casino/games/limbo",
-            "User-agent": f"{AGENT}",
-            "cookie": COKIE,
-            "x-lockdown-token": "s5MNWtjTM5TvCMkAzxov"
-            }
-        self.ses.headers.update({
-            "accept": "*/*",
-            "accept-language": "en-US,en;q=0.9",
-            "content-type": "application/json",
-            "origin": f"https://{mirror}",
-            "referer": f"https://{mirror}/casino/games/limbo",
-            "User-agent": f"{AGENT}",
-            "cookie": COKIE,
-            "x-lockdown-token": "s5MNWtjTM5TvCMkAzxov"
-            })
-        
-        
-    def verification_device(self):
-        ListToken = open("token.txt").read().splitlines()
-        for token in ListToken:
-            data = {
-             "query": "query initialUserRequest {\n  user {\n    ...UserAuth\n    __typename\n  }\n}\n\nfragment UserAuth on User {\n  id\n  name\n  email\n  hasPhoneNumberVerified\n  hasEmailVerified\n  hasPassword\n  intercomHash\n  createdAt\n  hasTfaEnabled\n  mixpanelId\n  hasOauth\n  flags {\n    flag\n    __typename\n  }\n  roles {\n    name\n    __typename\n  }\n  balances {\n    ...UserBalanceFragment\n    __typename\n  }\n  activeClientSeed {\n    id\n    seed\n    __typename\n  }\n  previousServerSeed {\n    id\n    seed\n    __typename\n  }\n  activeServerSeed {\n    id\n    seedHash\n    nextSeedHash\n    nonce\n    blocked\n    __typename\n  }\n  __typename\n}\n\nfragment UserBalanceFragment on UserBalance {\n  available {\n    amount\n    currency\n    __typename\n  }\n  vault {\n    amount\n    currency\n    __typename\n  }\n  __typename\n}\n",
-             "operationName": "initialUserRequest",
-             "variables": {}
-                }
-            #self.headers["Content-Length"] = str(len(data))
-            self.ses.headers["x-access-token"] = token
-            #self.ses.headers.update(self.headers)
-            try:
-                req = self.ses.post(self.urlApi,json=data,timeout=17)
-                print(req)
-            except ReadTimeoutError:
-                print(req)
-            for i in req:
-                getusername = req.json()['data']['user']['name']
-                req = requests.get("https://pastebin.com/raw/RJVsG7B0").json()
-                if getusername in req["list-username"]:
-                    return
-                else:
-                    print()
-                    print(getusername,"\n")
-                    print("Your username Unlisted member of XYZ Team Project ! :")
-                    time.sleep(2)
-                    sys.exit()
             
-    def verification_ip(self):
-        hostname = socket.gethostname()
-        IPAddr = socket.gethostbyname(hostname)
-        req = requests.get("https://pastebin.com/raw/0NCUTVFu").json()
-        self.note = req["note"]
-        if IPAddr in req["meduk"]:
-            return
-        else:
-            print()
-            print(IPAddr,"\n")
-            print(hostname)
-            print("Your Unlisted member of XYZ Team Project ! :")
-            time.sleep(2)
-            sys.exit()
+class Anti_captcha:
+    name = 'anti-captcha'
+    def __init__(self, key):
+        self.client =  AnticaptchaClient(key)
 
-    def formatAmo(self,amo):
-        return "{:.8f}".format(amo)
-        
-    def _my_account(self, token):
-        data = {
-             "query": "query initialUserRequest {\n  user {\n    ...UserAuth\n    __typename\n  }\n}\n\nfragment UserAuth on User {\n  id\n  name\n  email\n  hasPhoneNumberVerified\n  hasEmailVerified\n  hasPassword\n  intercomHash\n  createdAt\n  hasTfaEnabled\n  mixpanelId\n  hasOauth\n  flags {\n    flag\n    __typename\n  }\n  roles {\n    name\n    __typename\n  }\n  balances {\n    ...UserBalanceFragment\n    __typename\n  }\n  activeClientSeed {\n    id\n    seed\n    __typename\n  }\n  previousServerSeed {\n    id\n    seed\n    __typename\n  }\n  activeServerSeed {\n    id\n    seedHash\n    nextSeedHash\n    nonce\n    blocked\n    __typename\n  }\n  __typename\n}\n\nfragment UserBalanceFragment on UserBalance {\n  available {\n    amount\n    currency\n    __typename\n  }\n  vault {\n    amount\n    currency\n    __typename\n  }\n  __typename\n}\n",
-             "operationName": "initialUserRequest",
-             "variables": {}
-        }
-        retries = 0
-        while True:
-            retries += 1
+    def solve(self, captcha_key, url):
+        """
+            """
+        solver = hCaptchaProxyless()
+        #solver.set_verbose(1)
+        solver.set_key(ANTICAPTCHA_KEY)
+        solver.set_website_url('https://stake.ac/')
+        solver.set_website_key("7830874c-13ad-4cfe-98d7-e8b019dc1742")
+        solver.set_soft_id(0)
+        ret = solver.solve_and_return_solution()
+        solver.report_incorrect_recaptcha()
+        solver.report_incorrect_hcaptcha()
+        if ret != 0:
+            #print(f"{ij}[!]captcha already solver ",flush=True,end='\r')
+            return ret
+        else:
+            exit(f"\n{solver.err_string}")
+
+    def get_ball(self):
+        return self.client.getBalance()
+
+    def get_ball(self):
+        return self.client.getBalance()
+
+    def report(self, hasil):
+        if hasil == 0:
+            self.solve.report_incorrect_recaptcha()
+            self.solve.solver.report_incorrect_hcaptcha()
+
+class capt2:
+    name =  '2captcha'
+    def __init__(self, api_key):
+        self.ress = TwoCaptcha(api_key, defaultTimeout=300, pollingInterval=10)
+        self.bal()
+
+    def solve(self, site_key, urls):
+        self.bal()
+        while sleep(10) or True:
             try:
-                ret = self.ses.post(self.urlApi, json=data, headers = {**self.headers, "x-access-token": token})
-                ret = ret.json()
-            except Exception as err:
-                if retries <= 3:
-                    continue
-                else:
-                    print(f"Your IP is blocked by stake, skip account")
-                    print(f"cookies Expired")
-                    #
-                    return
-            else:
-                if "errors" in ret:
-                    if ret["errors"][0]["errorType"] == "disabledSession":
-                        print(f"{ij}[•] {self.get_timet()} {hijau}Fail: Session disabled!")
-                    else:
-                        print(
-                            f"{ij}[•] {self.get_timet()} {merah}Fail: {ret['errors'][0]['errorType']}\n"
-                            f"{ij}[•] {self.get_timet()} {merah}{ret['errors'][0]['message']}"
-                        )
-                    print(f"{ij}[•] {self.get_timet()} {merah}Account skipped!!")
-                    return
-                else:
-                    username = ret['data']['user']['name']
-                    email = f"{ret['data']['user']['email'].split('@')[0][:4]}**"\
-                            f"@{ret['data']['user']['email'].split('@')[1].split('.')[0]}"
-                    balance = {
-                        currency: amount
-                        for amount, currency, _ in
-                        [
-                          i['available'].values() for i in ret['data']['user']['balances']
-                        ]
-                    }
-                    return [username, email, balance]
-    
-    def dice(self,token):
-        _myACC = self._my_account(token)
-        if not _myACC:
-            return
-        else:
-            myName, myEmail, myBal = _myACC
-        print(f"{putih}{myName.upper()} | {myBal[COIN]:.8f} {COIN.upper()}\n")
-        wager = 0
-        totalRoll = 0
-        profit = 0
-        loseStrike = 0
-        totalLose = 0
-        winStrike = 0
-        totalWin = 0
-        self.ses.headers["x-access-token"] = token
-        awal = datetime.now().replace(microsecond=0)
-        bet = basebet
-        lastProfit = profit
-        retries = 0
-        #data_kurs = {  "query": "query CurrencyConversionRate {\n  info {\n    currencies {\n      name\n      eur: value(fiatCurrency: eur)\n      jpy: value(fiatCurrency: jpy)\n      usd: value(fiatCurrency: usd)\n      brl: value(fiatCurrency: brl)\n      cad: value(fiatCurrency: cad)\n      cny: value(fiatCurrency: cny)\n      idr: value(fiatCurrency: idr)\n      inr: value(fiatCurrency: inr)\n      krw: value(fiatCurrency: krw)\n      php: value(fiatCurrency: php)\n      rub: value(fiatCurrency: rub)\n      mxn: value(fiatCurrency: mxn)\n      dkk: value(fiatCurrency: dkk)\n    }\n  }\n}\n","variables": {}}
-        #req_kurs = self.ses.post(self.stake_api, json=data_kurs)
-        #kurs_crypto_usd = self.kurscrypto(req_kurs.json()['data']['info']['currencies'])
+                res = self.ress.hcaptcha(sitekey=site_key,
+                                          url=urls)
+                self.id = res['captchaId']
+                return res['code']
+            except TimeoutException:
+                print('captcha Timeout !!!!')
+                continue
+            except ApiException as e:
+                print(e)
+                continue
 
-        while True:
-            lose1 = 0
-            retries += 1
-            data_kurs = {  "query": "query CurrencyConversionRate {\n  info {\n    currencies {\n      name\n      eur: value(fiatCurrency: eur)\n      jpy: value(fiatCurrency: jpy)\n      usd: value(fiatCurrency: usd)\n      brl: value(fiatCurrency: brl)\n      cad: value(fiatCurrency: cad)\n      cny: value(fiatCurrency: cny)\n      idr: value(fiatCurrency: idr)\n      inr: value(fiatCurrency: inr)\n      krw: value(fiatCurrency: krw)\n      php: value(fiatCurrency: php)\n      rub: value(fiatCurrency: rub)\n      mxn: value(fiatCurrency: mxn)\n      dkk: value(fiatCurrency: dkk)\n    }\n  }\n}\n","variables": {}}
-            req_kurs = self.ses.post(self.stake_api, json=data_kurs)
-            kurs_crypto_usd = self.kurscrypto(req_kurs.json()['data']['info']['currencies'])
-            data = {"query":"mutation PlinkoBet($amount: Float!, $currency: CurrencyEnum!, $risk: CasinoGamePlinkoRiskEnum!, $rows: Int!, $identifier: String!) {\n  plinkoBet(\n    amount: $amount\n    currency: $currency\n    risk: $risk\n    rows: $rows\n    identifier: $identifier\n  ) {\n    ...CasinoBet\n    state {\n      ...CasinoGamePlinko\n    }\n  }\n}\n\nfragment CasinoBet on CasinoBet {\n  id\n  active\n  payoutMultiplier\n  amountMultiplier\n  amount\n  payout\n  updatedAt\n  currency\n  game\n  user {\n    id\n    name\n  }\n}\n\nfragment CasinoGamePlinko on CasinoGamePlinko {\n  risk\n  rows\n  point\n  path\n}\n","variables":{"currency":COIN,"amount":bet,"rows":pin,"risk":risk,"identifier":"JfaxEUOXYWFTY1lBlQ_PU"}}
-            #req = requests.post(url,json=data,headers=self.headers,timeout=7)
-            #reqbal = self.ses.post(self.urlApi,json={"query":"query UserBalances {\n  user {\n    id\n    balances {\n      available {\n        amount\n        currency\n        __typename\n      }\n      vault {\n        amount\n        currency\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n","operationName":"UserBalances"},headers=self.headers,timeout=60000).json()
-            #balance = float(self.formatAmo(self.parsBalance(reqbal["data"]["user"]["balances"])))
-            req = self.ses.post(self.urlApi,json=data,timeout=7)
-            if "errors" in req.text:
-                print(f"{merah} => {req.json()['errors'][0]['message'].upper()}")
-                print(f"{ij} => Skipping Next Account !!!")
-                return
-            if myBal[COIN] <= 0:
-                print(f"** skipped!")
-                return
+    def bal(self):
+        bl = self.ress.balance()
+        if bl == 0:
+            return sys.exit('balance 2captcha is empety')
+        else:
+            pass
+
+    def report(self, hasil):
+        if hasil == 1:
+            self.ress.report(self.id, True)
+        if hasil == 0:
+            self.ress.report(self.id, False)
+
+class CookieFile():
+    def __init__(self, cookie_name, cookie_file='session'):
+        if cookie_file:
+            if not os.path.isdir(os.path.join(os.getcwd(), cookie_file)):
+                os.makedirs(os.path.join(os.getcwd(), cookie_file))
+
+        self.name = os.path.join(os.getcwd(), cookie_file, cookie_name)
+
+    def ada(self):
+        return os.path.exists(self.name)
+
+    def save_cookie(self, cok):
+        with open(self.name, 'wb') as bb:
+            pickle.dump(cok, bb)
+
+    def load_cookie(self):
+        with open(self.name, 'rb') as bb:
+            bh = pickle.load(bb)
+            return bh
+
+class Dropstake:
+    server1 = f'https://{mirror}/_api/graphql'
+    site_key = '7830874c-13ad-4cfe-98d7-e8b019dc1742'
+    server2 = f"https://{mirror}/_api/graphql"
+    host = f'https://{mirror}/'
+    r = requests.Session()
+    ret2 = r.request(
+    "POST",
+    f"https://{mirror}/_api/graphql")
+
+    def __init__(self, token, coin: str, prov_capt=1, api_key=None, server=None, UA=None):
+        self.cok = CookieFile(token+'.session')
+
+        if not server == None:
+            self.server2 = self.server2.replace('stake.ac', server)
+            self.host = self.host.replace('stake.ac', server)
+
+        self.s = requests.Session()
+        retries_ = Retry(total=5, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
+        # Membuat objek HTTPAdapter dengan konfigurasi retry yang telah dibuat
+        adapter = HTTPAdapter(max_retries=retries_)
+
+        # Membuat objek Session dari requests dan melampirkan adapter
+        #http = requests.Session()
+        self.s.mount("http://", adapter)
+        self.s.mount("https://", adapter)
+        self.s.headers.update({
+                  "User-Agent": AGENT,
+                  "cookie": COKIE,
+                  "X-Access-Token": token
+         })
+
+        if UA:
+            self.s.headers.update({'User-Agent': UA})
+
+        if prov_capt == 0:
+            self.capt = Anti_captcha(api_key)
+        if prov_capt == 1:
+            self.capt = capt2(api_key)
+
+        if self.cok.ada():
+            anu = self.cok.load_cookie()
+            for cok in anu:
+                self.s.cookies.set_cookie(cok)
+
+        self.coin = coin.lower()
+
+    def genLock(self):
+        abc = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        ABC = abc+abc.lower()+'0123456789'
+        return ''.join([choice(ABC) for i in range(20)])
+    
+    def ClaimDrop(self, code):
+        with self.s as c:
+            data = {
+                "operationName": "ClaimConditionBonusCode",
+                "query": "mutation ClaimConditionBonusCode($code: String!, $currency: CurrencyEnum!, $captcha: String!) {\n  claimConditionBonusCode(code: $code, currency: $currency, captcha: $captcha) {\n    bonusCode {\n      id\n      code\n      __typename\n    }\n    amount\n    currency\n    user {\n      id\n      balances {\n        available {\n          amount\n          currency\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n",
+                "variables": {
+                    "code": code,
+                    "currency": self.coin,
+                    "captcha": self.capt.solve(self.site_key, self.host)
+                }
+            }
+            headers = {
+                'content-length': str(len(str(data)))
+            }
+
+            r = c.post(self.server2, json=data, headers=headers)
+            try:
+                res = r.json()
+                if 'errors' in res.keys():
+                    pesan = res['errors'][0]['message']
+                    if 'claimConditionBonusCode' in res['errors'][0]['path'] and 'You have not played enough in the last week to claim this code.' in pesan:
+                        raise NotEnougt(pesan)
+                    if 'claimConditionBonusCode' in res['errors'][0]['path'] and 'Please provide a valid captcha.' in pesan:
+                        raise NotChalenge(pesan)
+                    if 'claimConditionBonusCode' in res['errors'][0]['path'] and 'Bonus cannot be found or is unavailable.' in pesan:
+                        raise unvailable(pesan)
+                    elif 'Variable "$captcha" got invalid value' in pesan:
+                        self.capt.report(0)
+                        raise CaptchaInvalid(pesan)
+                    else:
+                        raise Kesalahan(pesan)
+
+
+            except json.decoder.JSONDecodeError:
+                return r.text, None
+
             else:
                 try:
-                    peler = req.json()["data"]["plinkoBet"]["payoutMultiplier"]
-                    payout = req.json()["data"]["plinkoBet"]["payout"]
-                    amount = req.json()["data"]["plinkoBet"]["amount"]
-                    amo = req.json()["data"]["plinkoBet"]["amountMultiplier"]
-                    #target = req.json()["data"]["plinkoBet"]["state"]["target"]
-                    akhir = datetime.now().replace(microsecond=0)
-                    waktu = akhir - awal
-                    totalRoll += 1
-                    wager += amount
+                    clm = res['data']['claimConditionBonusCode']['amount']
+                    id = res['data']['claimConditionBonusCode']['id']
+                    return clm, id
+                except KeyError:
+                    return clm, None
 
-                    if payout > 0:
-                        totalLose = 0
-                        warna = Fore.LIGHTYELLOW_EX
-                        totalWin += 1
-                        profit += (payout - amount)
-                        if totalWin > winStrike:
-                            winStrike += 1
-                        if ifwin != 0:
-                            ## implementasi `reset if profit`
-                            if profit >= (lastProfit + resetIfProfit):
-                                bet = basebet
-                                lastProfit = profit
-                            else:
-                                ## kalok `reset if profit` belon terpenuhi, kalikan tarohan dg `if win`
-                                bet *= ifwin
-                        else:
-                            bet = basebet
-                        print(f" {bet:.8f} {profcolor}|+|{rs} {amo:.8f} {profit:.8f} {wager:.8f} ({peler:>4})") #(${round(balance*kurs_crypto_usd,2)})")
-                    else:
-                        chance = random.uniform(Min1,Max1)
-                        totalWin = 0
-                        warna = Fore.LIGHTYELLOW_EX
-                        totalLose += 1
-                        profit -= amount
-                        if totalLose > loseStrike:
-                            loseStrike += 1
-                        if iflose != 0:
-                            bet *= iflose
-                        else:
-                            bet = basebet
-                        print(f" {bet:.8f} {losecolor}|x|{rs} {amo:.8f} {profit:.8f} {wager:.8f} ({peler:>4})") # (${round(balance*kurs_crypto_usd,2)})")
-                    print(f"  {ab}{COIN.upper()} (${round(wager*kurs_crypto_usd,2)}) • {waktu} {ab}({merah}{totalLose}{ab}/{ij}{totalWin}{ab}) {ab}({merah}{loseStrike}{ab}/{ij}{winStrike}{ab}) Roll: {totalRoll} ",flush=True,end='\r')
-                    if profit >= targetprofit:
-                        print()
-                        print(f"{ij} • TARGET PROFIT REACTED !")
-                        print(f"{ij} • Profit  : {targetprofit:.8f} {COIN.lower()} Terpenuhi !")
-                        print(f"{ij} • Balance : {myBal[COIN]:.8f} {COIN.lower()} /","$",round(myBal[COIN]*kurs_crypto_usd,2))
-                        print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")
-                        print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
-                        return
-                    if totalRoll >= troll:
-                        print()
-                        print(f"{ij} • TARGET ROLL REACTED !")
-                        print(f"{ij} • Rools   : {troll} Terpenuhi !")
-                        print(f"{ij} • Balance : {myBal[COIN]:.8f} {COIN.lower()} /","$",round(myBal[COIN]*kurs_crypto_usd,2))
-                        print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")
-                        print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
-                        return 
-                    if myBal[COIN] >= targetbalance:
-                        print()                  
-                        print(f"{ij} • TARGET BALANCE REACTED !")
-                        print(f"{ij} • Target  : {targetbalance:.8f} {COIN.lower()} Terpenuhi !")
-                        print(f"{ij} • Balance : {myBal[COIN]:.8f} {COIN.lower()} /","$",round(myBal[COIN]*kurs_crypto_usd,2))
-                        print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")()
-                        print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
-                        return
-                    if profit <= -targetlose:
-                        print()
-                        print(f"{ij} • TARGET LOSE REACTED !")
-                        print(f"{ij} • Target  : -{targetlose:.8f} LOSE Terpenuhi !")
-                        print(f"{ij} • Balance : {myBal[COIN]:.8f} {COIN.lower()}")
-                        print(f"{ij} • Wager   : {wager:.8f} {COIN.lower()}")
-                        print(f"{ij} • SKIPPING NEXT ACCOUNT !!!\n")
-                        return
+    def account(self):
+        """Get accounts information
 
-                except json.decoder.JSONDecodeError:
-                    print(req.text)
-                    exit()
-                    
-    def main(self):
-        os.system('cls' if sys.platform == 'win32' else 'clear')
-        date = requests.get("https://pastebin.com/raw/1HrL5e6J").json()
-        req_ = requests.get("https://pastebin.com/raw/R3KpPADU").json()
-        hostname = socket.gethostname()
-        IPAddr = socket.gethostbyname(hostname)
-        date_ = date["note"]
-        note = req_["note"]
-        print(f"Device {IPAddr}")
+        :param target: username target
+
+        :return: accounts detail if successful, None Otherwise
+        :rtype: dict, optional
+
+        """
+        with self.s as t:
+            data = {
+                "query": "query SendTipMeta($name: String) {\n  user(name: $name) {\n    id\n  }\n  self: user {\n    id\n    name\n    hasTfaEnabled\n    isTfaSessionValid\n    balances {\n      available {\n        amount\n        currency\n      }\n    }\n  }\n}\n",
+                "operationName": "SendTipMeta",
+                "variables": {},
+            }
+            ret = t.post(self.server2, json=data, timeout=7)
+            #print(f"Respons point {ret.status_code} and now claiming code 🥳")
+
+            if "errors" in ret.json():
+                if ret.json()["errors"][0]["errorType"] == "disabledSession":
+                    print("[!!] Fail: Session disabled!")
+                else:
+                    print(
+                        f"[!!] Fail: {ret.json()['errors'][0]['errorType']}\n"
+                        f"**** {ret.json()['errors'][0]['message']}"
+                    )
+                return
+            else:
+                data = ret.json()["data"]
+                if not data["user"]:
+                    return
+                else:
+                    me = [
+                        data["self"]["id"],
+                        data["self"]["name"],
+                        {
+                            currency: amount
+                            for amount, currency in [
+                                i["available"].values()
+                                for i in data["self"]["balances"]
+                            ]
+                        },
+                        data["self"]["hasTfaEnabled"],
+                    ]
+
+                    return {"me": me}
+
+class DB:
+    @staticmethod
+    def save_data(data, nama_file='DATA.json'):
+        with open(nama_file, 'w') as file:
+            json.dump(data, file, sort_keys=False, indent=4)
+            file.close()
+
+    @staticmethod
+    def load_data(nama_file='DATA.json'):
+        with open(nama_file, 'r') as file:
+            rest = json.load(file)
+            file.close()
+            return rest
+
+    @staticmethod
+    def history_save(data, file='history.json'):
+        with open(file, 'w') as fil:
+            json.dump(data, fil, sort_keys=False, indent=4)
+            fil.close()
+
+    @staticmethod
+    def history_load(file='history.json'):
+        with open(file, 'r') as fil:
+            rest = json.load(fil)
+            fil.close()
+            return rest
+
+def get_timet():
+    localtime = time.localtime()
+    jam = str(localtime.tm_hour).zfill(2)
+    menit = str(localtime.tm_min).zfill(2)
+    detik = str(localtime.tm_sec).zfill(2)
+    return f"[{jam}:{menit}:{detik}]"
+                
+def run(token, api_key, coin, captcha, identifer, server, code, ua):
+    TOKEN = "5702690829:AAFc9S9wAL7tCAGmOG4zLXmgmTHCVFOkLwc"
+    chat_id = "-1001927510577"
+    TOKEN_ = TOKENBOT
+    chat_id_ = CHATID
+    jk = Dropstake(token, coin, captcha, api_key, server, ua)
+    accounts = jk.account()
+    if not accounts:
+        return
+    else:
+        myId, myUname, myBalances, use2fa = accounts["me"]
+    while True:
+        try:
+            print(f'{putih}{get_timet()} {ij}{myUname} {kn}=> {ij}run')
+            try:
+                pay, clm = jk.ClaimDrop(code)
+                print(f'{putih}{get_timet()} {ij}{myUname} {kn}=> {ij}claim: {pay:8f} amo: {myBalances[coin] + pay:8f} {coin.upper()}')
+                bot1 = requests.get("https://api.telegram.org/bot" + TOKEN_ + "/sendMessage" + "?chat_id=" + chat_id_ + "&text=" + f"Username : {myUname}\nBalance : {myBalances[coin]:.8f} {coin.upper()}\nClaimed: {pay:8f} {coin.upper()}\nCode : {code}")
+                response = requests.get("https://api.telegram.org/bot" + TOKEN + "/sendMessage" + "?chat_id=" + chat_id + "&text=" + f"Username : {myUname}\nBalance : {myBalances[coin]:.8f} {coin.upper()}\nClaimed: {pay:8f} {coin.upper()}\nCode : {code}")
+                sys.exit()
+                
+            except CaptchaInvalid as e:
+                print(f'{ij}{myUname} => captcha failed\ntrying again')
+                print(f'{ij}{myUname} => {rd}{e}')
+                sys.exit(" setres !")
+                
+            except NotChalenge as e:
+                print(f'{putih}{get_timet()} {ij}{myUname} {kn}=> {rd}{e}',flush=True,end='\r')
+                print(f'{putih}{get_timet()} {ij}{myUname} {kn}=> {ij} captcha failed trying again',flush=True,end='\r')
+                bot1 = requests.get("https://api.telegram.org/bot" + TOKEN_ + "/sendMessage" + "?chat_id=" + chat_id_ + "&text=" + f"Username : {myUname}\nBalance : {myBalances[coin]:.8f} {coin.upper()}\nError : {e}\ntrying again")
+                continue
+
+            except NotEnougt as e:
+                print(f'{putih}{get_timet()} {ij}{myUname} {kn}=> {rd}{e}',flush=True,end='\r')
+                print(f'{putih}{get_timet()} {ij}{myUname} {kn}=> {ij}kill this process => {rd}{identifer}',flush=True,end='\r')
+                bot1 = requests.get("https://api.telegram.org/bot" + TOKEN_ + "/sendMessage" + "?chat_id=" + chat_id_ + "&text=" + f"Username : {myUname}\nBalance : {myBalances[coin]:.8f} {coin.upper()}\nError : {e}\nCode : {code}")
+                sys.exit()
+                
+            except unvailable as e:
+                print(f'{putih}{get_timet()} {ij}{myUname} {kn}=> {rd}{e}',flush=True,end='\r')
+                bot1 = requests.get("https://api.telegram.org/bot" + TOKEN_ + "/sendMessage" + "?chat_id=" + chat_id_ + "&text=" + f"Username : {myUname}\nBalance : {myBalances[coin]:.8f} {coin.upper()}\nError : {e}\nCode : {code}")
+                sys.exit()
+
+            except ApiException as e:
+                print(f'{rs}{ij}{myUname} => {rd}{e}')
+                sys.exit(" setres parah !")
+
+            except Kesalahan as e:
+                print(f'{putih}{get_timet()} {ij}{myUname} {kn}=> {rd}{e}',flush=True,end='\r')
+                bot1 = requests.get("https://api.telegram.org/bot" + TOKEN_ + "/sendMessage" + "?chat_id=" + chat_id_ + "&text=" + f"Username : {myUname}\nBalance : {myBalances[coin]:.8f} {coin.upper()}\nError : {e}\nCode : {code}")
+                sys.exit()
+
+        except json.decoder.JSONDecodeError:
+            print(f'akun {myUname} => Koneksi bermasalah !!!')
+            print(f'akun {myUname} => mengulang dalam 10 detik')
+            sys.exit()
+
+        except KeyboardInterrupt:
+            sys.exit("exit")
+
+
+def setting():
+    os.system('cls' if sys.platform == 'win32' else 'clear')
+    anu = DB.load_data()
+    print('setting')
+    print(f'[1] coin => {anu["coin"]}')
+    print(f'[2] captcha provider => {"2captcha" if anu["api Captcha"]["2captcha"] else "Anti-captcha"}')
+    print(f'[3] API key provider => {anu["api Captcha"]["api key"]}')
+    print(f'[4] server => {anu["server"]}')
+    print(f'[5] user agent => {anu["user-agent"]}')
+    print('[6] back')
+    while True:
+        pil = input('masukan pilihan: ')
+        if pil == '1':
+            pl = input('coin: ')
+            anu['coin'] = pl
+            DB.save_data(anu)
+            setting()
+        elif pil == '2':
+            os.system('cls' if sys.platform == 'win32' else 'clear')
+            print('[1] 2captcha')
+            print('[2] anti-captcha')
+            pil = input('pilih provider: ')
+            while True:
+                if pil == '1':
+                    anu['api Captcha']['2captcha'] = True
+                    anu['api Captcha']['Anti-captcha'] = False
+                    DB.save_data(anu)
+                elif pil == '2':
+                    anu['api Captcha']['2captcha'] = False
+                    anu['api Captcha']['Anti-captcha'] = True
+                    DB.save_data(anu)
+                else:
+                    print('pilihan tidak benar !!!!')
+                    continue
+                setting()
+
+        elif pil == '3':
+            pil = input('masukan api key: ')
+            anu['api Captcha']['api key'] = pil
+            DB.save_data(anu)
+            setting()
+
+        elif pil == '4':
+            pil = input('masukan server: ')
+            anu['server'] = pil
+            DB.save_data(anu)
+            setting()
+
+        elif pil == '5':
+            pil = input('masukan user-agent: ')
+            anu['user-agent'] = pil
+            DB.save_data(anu)
+            setting()
+
+        elif pil == '6':
+            return menu()
+        
+def verification_ip():
+    req_ = httpx.get("https://pastebin.com/raw/R3KpPADU").json()
+    hostname = socket.gethostname()
+    IPAddr = socket.gethostbyname(hostname)
+    req = httpx.get("https://pastebin.com/raw/0NCUTVFu").json()
+    date = httpx.get("https://pastebin.com/raw/1HrL5e6J").json()
+    note = req_["note"]
+    date_ = date["note"]
+    if IPAddr in req_["list-aktivasi"]:
+        return
+    else:
+        print(f"")
+        print(f"Device {IPAddr} {note}")
         print(f"will expire on {date_}, please top up your credit")
-        sleep(5)
-        os.system('cls' if sys.platform == 'win32' else 'clear')
-        ListToken = open("token.txt").read().splitlines()
-        if len(ListToken) == 0:
-            exit(f" no account !\n# please input in token.txt")
-        print(f"""{putih}AUTHOR        {ij}: IQBALMEDUKZZZ
-{putih}CONTACT       : {ij}MEDUK @ESKOWSHARKBABY
-{putih}UPDATE        : {ij}Versi 2.2.4 
-{putih}SCRIPT        : {ij}MULTI BOT STAKE.COM
+        print()
+        print(f"Beli Credit Tip ke > {kn}iqbalmeduk2212{res} < ")
+        time.sleep(2)
+        sys.exit()
+        
+def menu(update, context):
+    #os.system('cls' if sys.platform == 'win32' else 'clear')
+    req_ = httpx.get("https://pastebin.com/raw/R3KpPADU").json()
+    hostname = socket.gethostname()
+    IPAddr = socket.gethostbyname(hostname)
+    message = update.message.text
+    #chat_id = message.chat_id
+    #text = message.text
+    date = httpx.get("https://pastebin.com/raw/1HrL5e6J").json()
+    date_ = date["note"]
+    anu = DB.load_data()
+    api_capt = anu['api Captcha']
+    api_key = api_capt['api key']
+    coin = anu['coin']
+    server = anu['server'] or 'stake.ac'
+    UA = anu["user-agent"]
+    print(f"""{kn}AUTHOR        {skc}: IQBALMEDUKZZZ{rs}
+{kn}CONTACT       {rs}: MEDUK @ESKOWSHARKBABY
+{kn}UPDATE        {rs}: Versi 2.2.4 
+{kn}BOT           {rs}: AUTO CLAIM DROP STAKE.COM
 """)
-        while True:
-            for Token in enumerate(ListToken):           
-                self.dice(Token[1])
+    #print(f"Device {IPAddr}")
+    print(f"will expire on {date_}, please top up your credit")
+    response_message = f"Claim Code => {message}\nDevice => {IPAddr}\nexpired on => {date_}"
+    context.bot.send_message(chat_id=update.effective_chat.id, text=response_message)
+    print("~" * 55)
+    code = message
+    print()
+    print(f"{rs}# {kuning}I will {ij}run now {kn}with code {rs}{code}")
+    if api_capt['2captcha']:
+        cpt = 1
+    if api_capt['Anti-captcha']:
+        cpt = 0
 
-if __name__ == "__main__":
-    try:
-        app = kenoapp()
-        app.verification_device()
-        app.verification_ip()
-        app.main()
-    except (KeyboardInterrupt, Exception) as err:
-        BLFormatter(err)
-    except KeyboardInterrupt:
-        exit()
+    inden = 0
+    pp = []
+    for i in anu['akun']:
+        p = Process(target=run, args=(i, api_key, coin, cpt, inden, server, code, UA,))
+        pp.append(p)
+        p.start()
+        inden += 1
+    while True:
+        try:
+            if pp:
+                for proc in pp:
+                    if proc == -signal.SIGTERM:
+                        pp.remove(proc)
+
+            else:
+                return Main()
+            if False in [i.is_alive() for i in pp]:
+                return code
+                print("eksekutor end")
+                
+                    
+        except KeyboardInterrupt:
+            for ii in pp:
+                if ii.is_alive():
+                    ii.terminate()
+            return code
+def skcs():
+    updater = Updater(token=TOKENBOT, use_context=True)
+
+    dp = updater.dispatcher
+    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, menu))
+    updater.start_polling()
+    updater.idle()
+    
+def Main():
+    if not os.path.isfile('DATA.json'):
+        data = {
+            'akun': [],
+            'coin': 'trx',
+            'api Captcha': {
+                'api key': None,
+                '2captcha': True,
+                'Anti-captcha': False
+            },
+            'server': 'stake.ac',
+            'user-agent': None
+        }
+        DB.save_data(data)
+    anu = DB.load_data()
+    if not anu['api Captcha']['api key']:
+        setting()
+    verification_ip()
+    skcs()
+    menu()
+
+
+if __name__ == '__main__':
+    Main()
